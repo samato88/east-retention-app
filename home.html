@@ -1,0 +1,151 @@
+<?php include './includes/header.html';?>
+
+
+<!--<form name="queryForm" id="queryForm" action="/testing/results" method="get">-->
+
+<form name="queryForm" id="queryForm" action="/searchresults" method="get">
+
+    <div id="numberError"></div>
+    <div>
+        <span class="easttext">SEARCH:</span>
+        <select name="searchField" id="searchField">
+            <option value="worldcat_oclc_nbr">OCLC Number</option>
+            <option value="titlesearch">Title Phrase Search</option>
+        </select>
+        <input type="text"  size="40" name="query" id="query" value=""/>
+    </div>
+    <!--
+    EAST Aggregated Circulation
+    <select name="combinedCircOperator">
+    <option value="equals">Equals</option>
+    <option value="greaterthan">Greater Than</option>
+    <option value="lessthan">Less Than</option>
+    </select>
+    <input type ="text" name="combinedCirc">
+    <br />
+    -->
+    Number of EAST Retention Copies:
+    <select name="east_retentions_operator">
+        <option value="equals">Equals</option>
+        <option value="greaterthan">Greater Than</option>
+        <option value="lessthan">Less Than</option>
+    </select>
+    <select name="east_retentions">
+        <option value="any">any</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+    </select>
+
+
+    <br /><!--http://www.hathitrust.org/rights_database#Attributes-->
+    HathiTrust:
+    <select name="in_hathi">
+        <option value = "" selected></option>
+        <option value="T">In HathiTrust</option>
+        <option value="hathi_pd">In HathiTrust (pub. domain only)</option>
+        <option value="hathi_ic">In HathiTrust (in copyright only)</option>
+        <option value="F">Not in HathiTrust
+        </option>
+    </select>
+
+
+    <br />
+    <p>
+        <input type="submit" value="Submit">
+    </p>
+    <hr />
+
+    Held by (optional): <!--this should actually be constructed from DB inst_id table -->
+    <table>
+        <tr>
+            <td><input type="checkbox" name="any"  id="any" value="any">Any (default) </input></td>
+            <td><input type="checkbox" name="libraries[]" value="1">Adelphi</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4907">Amherst College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="3">Bard</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4908">Boston College</input></td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="libraries[]" value="4909">Boston University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4910">Brandeis University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4911">Bridgewater State University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4912">Bryn Mawr College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4913">Colby College</input></td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="libraries[]" value="4914">Connecticut College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4915">Elms College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4916">Fairfield University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="13">Hamilton College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4917">Hampshire College</input></td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="libraries[]" value="4920">Lafayette College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="5743">Loyola Notre Dame</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4921">Middlebury College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4922">Mount Holyoke College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4923">Phillips Exeter Academy</input></td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="libraries[]" value="4924">Saint Anselm College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4925">Siena College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4944">Skidmore College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4926">Smith College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4927">Swarthmore College</input></td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="libraries[]" value="4928">Trinity College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="28">Union College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4930">University of Connecticut</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4934">Umass Amherst</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4935">UMass Boston</input></td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="libraries[]" value="4936">UMass Dartmouth</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4937">UMass Lowell</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4938">University of New Hampshire</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4939">University of Rochester</input></td>
+            <td><input type="checkbox" name="libraries[]" value="36">Vassar College</input></td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="libraries[]" value="4940">Wellesley College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4941">Wesleyan University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4942">Williams College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4943">Yeshiva University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="5033">Five Colleges, Inc</input></td>
+        </tr>
+    </table>
+    <hr />
+
+</form>
+
+<script type="text/javascript">
+
+    $("input[name='libraries[]']:checkbox").click(function () {
+        $("input[id='any']:checkbox").prop('checked', false);
+    });
+
+    $('#any').click(function () {
+        $("input[name='libraries[]']:checkbox").prop('checked', false);
+    });
+
+    $("#queryForm").submit(function( event ) {
+        var $entry = $("#query").val().trim()
+        if ( ($('#searchField').val() == 'worldcat_oclc_nbr') && (isNaN($entry)) ) {
+            $('#numberError').html( "<span class='red'>Numbers only allowed in OCLC search</span>" );
+            event.preventDefault();
+        } else {
+        $('#numberError').html( "" );
+    }
+    });
+
+
+</script>
+
+</body>
+</html>
+</body>
+</html>

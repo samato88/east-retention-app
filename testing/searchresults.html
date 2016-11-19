@@ -1,0 +1,39 @@
+
+<?php include 'includes/header.html';?>
+
+<div id="loading" class="centerRow">
+    <h2 class="easttext">Querying...</h2>
+    <img src="https://blc.org/sites/default/files/BLC_Uploads/images/loopingCircle.gif" alt="loading" />
+</div>
+
+ <div id="results"></div>
+
+
+
+
+<script type="text/javascript">
+
+    $( "#loading" ).show();
+    var q = document.URL.split('?')[1];
+    console.log(q);
+    $.ajax({
+        url: '/testing/resultsblock?'+ q,
+        type: 'get',
+         success: function(data) {
+             $("#loading").hide();
+             //console.log(data) ;
+            $("#results").html(data);
+        },
+        error: function(xhr, desc, err) {
+            $("#loading").hide();
+            $("#results").html("An error occurred - try again. <p> <button><a href='/'>New Search</a></button></p>");
+
+            console.log(xhr);
+            console.log("Details: " + desc + "\nError:" + err);
+        }
+    }); // end ajax call
+
+
+</script>
+<?php include 'includes/footer.html';?>
+

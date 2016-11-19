@@ -1,0 +1,52 @@
+runtime: php55
+api_version: 1
+service: default
+
+handlers:
+
+- url: /stylesheets
+  static_dir: stylesheets
+
+- url: /images
+  static_dir: images
+
+- url: /js
+  static_dir: js
+
+#- url: /includes
+#  static_dir: includes
+# application_readable: true
+
+- url: /searchresults
+  script: /searchresults.html
+
+- url: /resultsblock
+  script: /resultsblock.php
+
+
+# TESTING
+- url: /testing
+  script: /testing/index.html
+
+- url: /testing/searchresults
+  script: /testing/searchresults.html
+
+- url: /testing/resultsblock
+  script: /testing/resultsblock.php
+
+# testing crud
+- url: /testing/updates
+  script: /testing/searchRemove.html
+
+- url: /testing/twig
+  script: /testing/twig.php5
+
+
+
+# default url
+#- url: /.*
+#  script: helloworld.php
+
+#application default page
+- url: /.*
+  script: home.html

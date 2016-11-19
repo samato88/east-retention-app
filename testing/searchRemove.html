@@ -1,0 +1,59 @@
+
+<?php include '../includes/header.html';?>
+
+Search for and remove retention { id library name here } 34731450
+
+<div>
+    <form name="queryForm" id="queryForm" action="" method="post">
+        <span class="easttext">SEARCH:</span>
+        <select name="searchField" id="searchField">
+          <option value="worldcat_oclc_nbr">OCLC Number</option>
+        </select>
+        <input type="text" size="20" name="query" id="query" value="" />
+        <input type="hidden" name="libraryid" value="1" />
+        <input id="submit_button" type="submit" value="Search" />
+
+    </form>
+</div>
+
+
+<div id="querydiv" class="centerRow">
+    <h2 class="easttext">Querying...</h2>
+    <img src="https://blc.org/sites/default/files/BLC_Uploads/images/loopingCircle.gif" alt="loading" />
+</div>
+
+ <div id="results">
+
+</div>
+
+<script type="text/javascript">
+    $( "#querydiv" ).hide();
+
+    $("submit_button").onclick(alert("HIYA"))
+   // $( "#queryForm").onsubmit (alert("HI"))
+   /*$( "#querydiv" ).hide();
+
+
+    $( "#querydiv" ).show();
+    var q = document.URL.split('?')[1];
+    console.log(q);
+    $.ajax({
+        url: '/testing/resultsblock?'+ q,
+        type: 'get',
+         success: function(data) {
+             $("#loading").hide();
+             //console.log(data) ;
+            $("#results").html(data);
+        },
+        error: function(xhr, desc, err) {
+            $("#loading").hide();
+            $("#results").html("An error occurred - try again. <p> <button><a href='/'>New Search</a></button></p>");
+            console.log(xhr);
+            console.log("Details: " + desc + "\nError:" + err);
+        }
+    }); // end ajax call
+
+*/
+</script>
+
+<?php include '../includes/footer.html';?>
