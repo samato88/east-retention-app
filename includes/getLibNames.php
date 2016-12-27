@@ -22,7 +22,7 @@ function getLibLimitName($id, $db) {  // libnames to report on you searched limi
     $namesql = "SELECT library FROM inst_id WHERE Inst_ID = $id" ;
     $nameresults = $db->query($namesql) ;
     $row = $nameresults->fetch();
-    $name = $row[library];
+    $name = $row[0];
     return $name ;
 } // end getLibLimitName
 ?>

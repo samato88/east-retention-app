@@ -6,13 +6,20 @@ function remove_stopwords($query,$boolstring) {
     $words = preg_split('/\s+/', $query);
     $searchwords = array_diff($words, $stopwords);
 
-    foreach ($searchwords as $value) {     // split and add +
-        if (strlen($value) < 3) { # skip other 1 and 2 character words in natural language search
-            continue ;
+    // check here for length - if only one word just search it.
+     if (count($words) < 2) { // if it is just a single word, use it.  e.g. "we"
+         return  $words[0] ;
+     }
+    else {
+        foreach ($searchwords as $value) {     // split and add +
+            if (strlen($value) < 3) { # skip other 1 and 2 character words in natural language search
+                                      # note that boolean search uses min/max length full-text parameters
+                continue;
+            }
+            $boolstring .= " +" . $value;
         }
-        $boolstring .= " +" . $value;
-    }
 
-    return $boolstring ;
+        return $boolstring;
+    }
 }
 ?>

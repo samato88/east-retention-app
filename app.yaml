@@ -34,9 +34,16 @@ handlers:
 - url: /testing/resultsblock
   script: /testing/resultsblock.php
 
-# testing crud
-- url: /testing/updates
-  script: /testing/searchRemove.html
+######  TESTING CRUD
+- url: /testing/edit
+  script: /testing/edit/index.php
+  login: required
+
+- url: /testing/edit/nologin
+  script: /testing/edit/nologin.html
+
+- url: /testing/edit/updates
+  script: /testing/edit/searchRemove.html
 
 - url: /testing/twig
   script: /testing/twig.php5

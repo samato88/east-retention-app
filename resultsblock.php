@@ -18,6 +18,8 @@ include 'includes/remove_punctuation.php'; // remove_punctuation function
 include 'includes/remove_stopwords.php'; // remove_stopwords function
 include 'includes/test_input.php'; // test_input function
 include 'includes/getLibNames.php'; // getLibNames, getLibLimitName functions
+include 'includes/listLimits.php'; // list search limited by in results
+include 'includes/paging.php'; // pagination
 
 
 $appliedLimits = array();
@@ -44,27 +46,32 @@ if( isset($_GET{'page'} ) ) {
     $offset = 0;
 }
 
+$limitlibraries = array();
+$limitlibrariesnames = array();
+$limitlibrariesnamesstring = "" ;
 
 if(!empty($_GET['libraries'])){ // Loop to store  values of individual checked checkbox.
-    $limitlibraries = array();
-    $limitlibrariesnames = array();
     foreach($_GET['libraries'] as $selected){
         $valselected = test_input($selected, "libraries") ;
         array_push($limitlibraries,  "library_id = " . $valselected) ;
         array_push($limitlibrariesnames, getLibLimitName($valselected, $db) );
     }
     $limitlibrary = " AND ( " . implode(' OR ',$limitlibraries) . ")" ;
-    $limitlibrariesnamesstring = "  <b>Retained at</b>: " . implode(", ", $limitlibrariesnames) ;
+    $limitlibrariesnamesstring = "  <b>Retained at</b>: " . implode(" or ", $limitlibrariesnames) ;
 }
-
-
 
 if ($field === "titlesearch")  {
     $boolstring = "" ;
     $titlelike  = remove_punctuation($query) ;
     $boolstring = remove_stopwords($titlelike,$boolstring);
 
-    $sql = "SELECT " . $fields . ", MATCH (". $field .") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND titlesearch LIKE '" . $titlelike ."%'  FROM bib_info  WHERE MATCH ( " . $field .") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND titlesearch LIKE '" . $titlelike ."%'";
+
+    if (strlen($boolstring) === 2) { // +ww - two letter word - search it
+        $sql = "SELECT " . $fields . " FROM bib_info  WHERE  title LIKE '" . $titlelike . " %'";
+
+    } else  {
+        $sql = "SELECT " . $fields . ", MATCH (" . $field . ") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND titlesearch LIKE '" . $titlelike . "%'  FROM bib_info  WHERE MATCH ( " . $field . ") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND titlesearch LIKE '" . $titlelike . "%'";
+    }
     //$sql = "SELECT " . $fields . ", MATCH (". $field .") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND title LIKE '" . $query ."%'  FROM bib_info  WHERE MATCH ( " . $field .") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND title LIKE '" . $query ."%'";
 
     //$sql = "SELECT " . $fields . ", MATCH (". $field .") AGAINST ('" . $query . "' IN NATURAL LANGUAGE MODE) as Relevance FROM bib_info  WHERE MATCH ( " . $field .") AGAINST ('" . $query . "' IN NATURAL LANGUAGE MODE)";
@@ -138,38 +145,19 @@ try {
     print "Error!: " . $e->getMessage() . "<br/>";
     die();
 }
-// pagination /////////////////////////////////////////
-$querystring =  $_SERVER['QUERY_STRING'] ;
-$self = htmlspecialchars($_SERVER['PHP_SELF']) ;
-$pagination = "" ;
+
+// pagination
 $to = $limit * $page  ;
-
-$self = preg_replace('/\.php.*/', "", $self);
-
-if ( preg_match("/testing/", $self) ) {
-    echo $sql . " <br/>" ;  $testing = "testing" ;
-} else { $testing = "" ;}
-
-if( $page > 1 ) { // need a previous button
-    //$pagination = $pagination . "<button><a href = \"$self?$querystring&page=" . ($page - 1) . "\"> Previous </a></button> ";
-    $pagination = $pagination . "<button><a href = \"$testing/searchresults?$querystring&page=" . ($page - 1) . "\"> Previous </a></button> ";
-}
-if($to < $count) { // need a next button
-    //$pagination = $pagination . "<button><a href = \"$self?$querystring" . "&page=" . ($page + 1) . "\"> Next  </a></button>";
-    $pagination = $pagination . "<button><a href = \"$testing/searchresults?$querystring" . "&page=" . ($page + 1) . "\"> Next  </a></button>";
-
-}
-$newsearch = "<button><a href='/" . $testing . "'>New Search</a></button>";
-
-////////////////////////////////////////////
-
+list ($pagination, $newsearch, $end) = paging($page, $to, $count) ;
 
 
 if ($count == 0 ) {
-    // find and report any library name limits here
-    // if ($limitlibraries) { echo "LIMIT: $limitlibraries" ;}
+    // find and report any search and library name limits here
 
-    echo "<b>No results for </b>'$query' <br />" ;
+    echo "<b>No results for </b>'$query'" ;
+    listLimits($appliedLimits, $limitlibraries);
+    if (isset($limitlibrariesnamesstring)) {echo  $limitlibrariesnamesstring ; }
+    echo "<br />" ;
     echo $newsearch ;
 } else {
     if ($field === 'titlesearch') {
@@ -178,19 +166,15 @@ if ($count == 0 ) {
         echo '<h3>Showing ' ;
         echo  $offset + 1 . " to $to  of $count results, sorted by relevance</h3>" ;
         echo'<p><b>You searched title</b> : ' . $query ;
-        if (sizeof($appliedLimits) > 0) {
-            echo  "<b> Limited by:</b> " ;
-            echo  join(', ', $appliedLimits) ;
-        }
-        if (isset($limitlibrariesnamesstring)) {
-            echo  $limitlibrariesnamesstring ;
-        }
+        listLimits($appliedLimits, $limitlibrariesnamesstring );
+        if (isset($limitlibrariesnamesstring)) {echo  $limitlibrariesnamesstring ; }
         echo '</p>' ;
     } else { // oclc search
         echo'<p>You searched OCLC number : ' . $query . '</p>' ;
     }
     echo $newsearch ;
     echo $pagination ;
+    echo $end ;
 } // end else not zero results
 
 if ($resultQuery !== false && $resultCount !== false) {
@@ -229,7 +213,9 @@ EOT;
     } // end foreach OCLC Number
 
 
-    echo $pagination ; // put pagination at the bottom of the page too
+    echo $newsearch ;
+    echo $pagination ;
+    echo $end ;
 
     /* if( isset($_GET{'page'} ) ) {
          include '../includes/footer.html';

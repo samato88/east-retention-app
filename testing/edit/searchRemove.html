@@ -1,7 +1,21 @@
+<?php # Looks for current Google account session
+use google\appengine\api\users\User;
+use google\appengine\api\users\UserService;
+include 'includes/connect.php';
+include 'includes/getLibNames.php';
+include 'includes/users.php';
 
-<?php include '../includes/header.html';?>
 
-Search for and remove retention { id library name here } 34731450
+$user = UserService::getCurrentUser();
+
+include 'includes/header.html';
+
+echo '<p>You are logged in as: ' . htmlspecialchars($user->getEmail()) . ', ' ;
+    echo 'associated with  ' ;
+    echo  getLibLimitName(test_user($user->getEmail()), $db) ;
+    echo '</p>';
+?>
+Search for and remove retention:
 
 <div>
     <form name="queryForm" id="queryForm" action="" method="post">
@@ -16,7 +30,7 @@ Search for and remove retention { id library name here } 34731450
     </form>
 </div>
 
-
+34731450
 <div id="querydiv" class="centerRow">
     <h2 class="easttext">Querying...</h2>
     <img src="https://blc.org/sites/default/files/BLC_Uploads/images/loopingCircle.gif" alt="loading" />
@@ -29,7 +43,7 @@ Search for and remove retention { id library name here } 34731450
 <script type="text/javascript">
     $( "#querydiv" ).hide();
 
-    $("submit_button").onclick(alert("HIYA"))
+    //$("submit_button").onclick(alert("HIYA"))
    // $( "#queryForm").onsubmit (alert("HI"))
    /*$( "#querydiv" ).hide();
 
@@ -56,4 +70,4 @@ Search for and remove retention { id library name here } 34731450
 */
 </script>
 
-<?php include '../includes/footer.html';?>
+<?php include 'includes/footer.html';?>

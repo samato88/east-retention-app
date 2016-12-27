@@ -12,8 +12,10 @@
     ?>
 
     <?php
+    include 'includes/connect.php'; // connects to appropriate database
+    include 'includes/test_input.php'; // test_input function
 
-    $db = connect_db() ;
+
     $libraryid = 1 ;
     $oclc = "" ;
 
@@ -23,7 +25,6 @@
     $sql = "SELECT " . $fields . " FROM bib_info  WHERE worldcat_oclc_nbr = ". $oclc . AND "library_id = ". $libraryid ;
 
    // select title, library_id from bib_info where bib_info.worldcat_oclc_nbr = "34731450" and library_id = "1"
-
 
 
 //   try/catch here doesn't seem to do any good - still hangs on mysql gone away error
@@ -135,49 +136,10 @@ EOT;
 
 
 
-    function test_input($data, $testfield) {
-
-        $data = trim($data);
-        if ($testfield == "query") {
-            if ($_GET["searchField"] == 'worldcat_oclc_nbr') {
-                if ( filter_var($data, FILTER_VALIDATE_INT)===false)  {
-                    exit("OCLC Number must contain only digits!  ");
-                }
-            }
-        //$data = stripslashes($data);
-        //$data = htmlspecialchars($data);
-        return $data;
 
 
-} // end test_input
 
-
-    function connect_db () {
-        $host = gethostname();
-        $attribs = array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET sql_mode="TRADITIONAL"');
-        if ( preg_match("/saras/", $host) ) {
-            //$db = new PDO('mysql:host=localhost;dbname=retentions','east','e2a2s2t2', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET sql_mode="TRADITIONAL"') );
-            //$db = new PDO('mysql:host=localhost;unix_socket=/Applications/MAMP/tmp/mysql/mysql.sock;dbname=retentions','east','e2a2s2t2', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET sql_mode="TRADITIONAL"') );
-            $dbhost = "mysql:host=localhost;unix_socket=/Applications/MAMP/tmp/mysql/mysql.sock;dbname=retentions" ;
-            $dbuser = "east" ;
-            $dbpass = "e2a2s2t2";
-            $machine = "local" ;
-        } else {
-            //$db = new pdo('mysql:unix_socket=/cloudsql/east-retention-db:us-east1:east-retention-db;dbname=retentions','root', 'e2a2s2t2', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET sql_mode="TRADITIONAL"') );
-            $dbhost = "mysql:unix_socket=/cloudsql/east-retention-db:us-east1:east-retention-db;dbname=retentions" ;
-            $dbuser = "root" ;
-            $dbpass = "e2a2s2t2" ;
-            $machine = "appspot" ;
-        }
-
-        try {
-            $db = new PDO($dbhost, $dbuser, $dbpass, $attribs);
-        }
-        catch (Exception $e) {
-            echo 'Connection Error: ',  $e->getMessage(), "\n";
-        }
-        return $db ;
-    }
+     }
     ?>
 
 

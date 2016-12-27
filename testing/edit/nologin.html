@@ -1,0 +1,21 @@
+
+
+
+<?php
+use google\appengine\api\users\User;
+use google\appengine\api\users\UserService;
+$user = UserService::getCurrentUser();
+include 'includes/header.html';
+
+echo "<h2>Invalid User: " .  $user->getNickname() . "</h2>" ;
+echo  $user->getNickname()  ;
+
+?>
+ is not registered to update retentions.
+Please contact <a href="mailto:samato@blc.org">samato@blc.org</a> to be added.
+
+
+
+
+<?php include 'includes/footer.html';?>
+
