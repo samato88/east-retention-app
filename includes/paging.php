@@ -7,7 +7,7 @@ function paging($page, $to, $count) {
     $self = preg_replace('/\.php.*/', "", $self);
 
     if ( preg_match("/testing/", $self) ) {
-        echo $sql . " <br/>" ;  $testing = "testing/" ;
+        $testing = "testing/" ;
     } else { $testing = "" ;}
 
     $pagination = "" ;

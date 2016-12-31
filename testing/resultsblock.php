@@ -150,6 +150,7 @@
     $to = $limit * $page  ;
     list ($pagination, $newsearch, $end) = paging($page, $to, $count) ;
 
+    if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "SQL:<br/> " . $sql . " <br/>" ;}
 
     if ($count == 0 ) {
         // find and report any search and library name limits here
@@ -172,6 +173,7 @@
         } else { // oclc search
             echo'<p>You searched OCLC number : ' . $query . '</p>' ;
         }
+
         echo $newsearch ;
         echo $pagination ;
         echo $end ;
