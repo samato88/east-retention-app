@@ -23,10 +23,15 @@ handlers:
 - url: /resultsblock
   script: /resultsblock.php
 
+- url: /about
+  script: /about.html
 
 # TESTING
 - url: /testing
   script: /testing/index.html
+
+- url: /testing/about
+  script: /testing/about.html
 
 - url: /testing/searchresults
   script: /testing/searchresults.html

@@ -18,7 +18,7 @@ echo '<p>You are logged in as: ' . htmlspecialchars($user->getEmail()) . ', ' ;
 Search for and remove retention:
 
 <div>
-    <form name="queryForm" id="queryForm" action="" method="post">
+    <form name="queryForm" id="queryForm"  method="post">
         <span class="easttext">SEARCH:</span>
         <select name="searchField" id="searchField">
           <option value="worldcat_oclc_nbr">OCLC Number</option>
@@ -36,18 +36,19 @@ Search for and remove retention:
     <img src="https://blc.org/sites/default/files/BLC_Uploads/images/loopingCircle.gif" alt="loading" />
 </div>
 
- <div id="results">
-
-</div>
+ <div id="results"></div>
 
 <script type="text/javascript">
     $( "#querydiv" ).hide();
 
-    //$("submit_button").onclick(alert("HIYA"))
-   // $( "#queryForm").onsubmit (alert("HI"))
-   /*$( "#querydiv" ).hide();
+    $( "#queryForm" ).submit(function( event ) {
+        alert( "Handler for .submit() called." );
+        event.preventDefault();
+    });
 
+    //$( "#querydiv" ).hide();
 
+/*
     $( "#querydiv" ).show();
     var q = document.URL.split('?')[1];
     console.log(q);

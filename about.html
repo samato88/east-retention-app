@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/stylesheets/main.css">
+    <title>About the EAST Retention Database:  FAQ</title>
+
+<script>
+    $(document).ready(function() {
+        $('#faq .question').each(function() {
+            var question = $(this), state = false, answer = question.next('div').hide();
+            question.click(function() {
+             state = !state;
+             answer.toggle(state);question.toggleClass('active',state);
+              });
+        });
+    });
+</script>
+</head>
+
+<body>
+<a href="http://eastlibraries.org">
+    <img src="/images/eastlogo.png" alt="east logo" width="355" height="44"/></a>
+<h1 class="easttext"><a href="/" class="nostylelink easttext">EAST Retentions</a></h1>
+
+<h2 class="easttext">Frequently Asked Questions</h2>
+
+
+<div id="faq">
+<p class="question" id="q1"> What data is contained in the EAST Retention Database?</p>
+<div><p id="a1">This database contains all retention commitments made by EAST retention partners
+    as of December 2016. This data was provided by Sustainable Collections Services ®,
+    and is, for the most part, the same data as found in GreenGlass, the tool used for
+    the original EAST collection analysis. The two exceptions to this are that ConnectNY
+    commitments which were extended to EAST are also included, and any changes to
+    retentions which were provided to EAST by Retention Partners are also reflected
+    in this data.</p></div>
+
+<p class="question" id="q2"> Why did EAST create this database when GreenGlass already exists?</p>
+<div><p id="a2">Access to GreenGlass will end in October of 2018, and access requires a login. The data
+    in GreenGlass is a static dataset as of October 2016, and while mostly accurate, may contain
+    some inaccurate data.   EAST is in the process of exploring various options for providing up to
+    date access to the EAST retention commitments for a longer period of time, including maintaining
+    a database such as this one.</p></div>
+
+<p class="question" id="q3"> Why did EAST create this database rather than disclosing EAST retention commitments in WorldCat?
+    <div><p id="a3">At the present time there is no tool available to disclose EAST retentions in WorldCat.
+    Once a tool to register retention commitments in OCLC is available EAST will explore this option.
+    In the meantime the EAST Project Team felt it was important to explore all options.</p></div>
+
+<p class="question" id="q4"> Can I make changes directly to this data?</p>
+<div><p id="a4">Not at this time.  However you can request that changes be made by emailing the
+    EAST Data Librarian Sara Amato at samato@blc.org.   Please note that any changes to EAST
+    retention commitments must be in accordance with the
+    <a href="https://eastlibraries.org/policies-mou">EAST Major Operating Policies</a>.</p></div>
+
+<p class="question" id="q5"> Can this database tell me who holds at title in EAST?</p>
+<div><p id="a5">No, this database only contains retentions, not full print holdings.  If you
+    need to determine who else holds a title, please use
+    <a href="http://greenglass.sustainablecollections.com/">GreenGlass</a> or
+    <a href="https://www.worldcat.org">WorldCat</a>.</p></div>
+
+<p class="question" id="q6"> Did you know that diacritics aren’t working?</p>
+<div><p id="a6">Yes, we are aware of the display issues with diacritics.   If it is determined that this database
+    will be used on an ongoing basis an effort will be made to fix this issue.</p></div>
+
+<p class="question" id="q7"> Why do some titles sort out of order?</p>
+<div><p id="a7">The data provided to us for this databases has the full 245 (subfields a, b & c) in the titles.
+    While titles generally sort in order, this occasionally causes problems such as the example below:
+    <blockquote>
+    <i>The diary of a chambermaid : a naughty French novel / Octave Mirbeau.</i><br />
+    &nbsp;&nbsp;&nbsp;&nbsp;sorts before<br />
+    <i>The diary of a chambermaid / Octave Mirbeau</i><br />
+    &nbsp;&nbsp;&nbsp;&nbsp;as “a naughty” comes before “Octave” .
+    </blockquote>
+    </p></div>
+
+<p class="question" id="q8"> Can I get a copy of the raw data used to build this database?</p>
+<div><p id="a8">By all means.  You can request a copy of the raw data by completing this form:
+    https://goo.gl/AqCPyO .</p></div>
+
+<p class="question" id="q9"> I have feedback or more questions!</p>
+<div><p id="a9">Please direct any feedback or additional questions to Sara Amato - samato@blc.org.</p></div>
+
+</div>
+
+<?php include 'includes/footer.html';?>
+
+</body>
+</html>
