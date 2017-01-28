@@ -1,12 +1,11 @@
 <?php
 
+// valid users for editing "user@place.edu" => library_i
 function test_user($user)
 {
     $users = array(
         "test@example.com" => 1,
-        "samato@blc.org" => 1,
-        "aperricci@blc.org" => 2,
-
+        "joe@my.edu" = 2
     );
 
     if ($users[$user]) {
