@@ -5,5 +5,14 @@
 <a href="http://greenglass.sustainablecollections.com/">GreenGlass</a> |
 <a href="https://eastlibraries.org/contact-us">Contact Us</a>
 </div>
+
+
+<?php // exclude analytics from local testing pages
+    include 'includes/isTesting.php'; // is this the testing site
+    if ($testing == "") {
+    include_once("includes/analyticstracking.php");
+}
+?>
+
 </body>
 </html>

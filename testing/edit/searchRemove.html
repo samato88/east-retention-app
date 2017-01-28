@@ -15,7 +15,7 @@ echo '<p>You are logged in as: ' . htmlspecialchars($user->getEmail()) . ', ' ;
     echo  getLibLimitName(test_user($user->getEmail()), $db) ;
     echo '</p>';
 ?>
-Search for and remove retention:
+Search for and remove or transfer retention:
 
 <div>
     <form name="queryForm" id="queryForm"  method="post">
@@ -26,12 +26,11 @@ Search for and remove retention:
         <input type="text" size="20" name="query" id="query" value="" />
         <input type="hidden" name="libraryid" value="1" />
         <input id="submit_button" type="submit" value="Search" />
-
     </form>
 </div>
 
 34731450
-<div id="querydiv" class="centerRow">
+<div id="loading" class="centerRow">
     <h2 class="easttext">Querying...</h2>
     <img src="https://blc.org/sites/default/files/BLC_Uploads/images/loopingCircle.gif" alt="loading" />
 </div>
@@ -39,36 +38,42 @@ Search for and remove retention:
  <div id="results"></div>
 
 <script type="text/javascript">
-    $( "#querydiv" ).hide();
+    $( "#loading" ).hide(); // hide on load
 
     $( "#queryForm" ).submit(function( event ) {
-        alert( "Handler for .submit() called." );
         event.preventDefault();
+
+        $( "#queryForm" ).hide();
+        $( "#loading" ).show();
+        //SEA TO HERE - create search string query oclc number + limit to library
+
+        //?searchField=worldcat_oclc_nbr
+        // &query=25214615+
+        // &east_retentions_operator=equals
+        // &east_retentions=any
+        // &in_hathi=&libraries%5B%5D=3
+        var oclc = $("#query").val();
+        alert( "oclc: " + oclc + "library" + );
+
+        $.ajax({
+            url: '/testing/edit/resultsblock?'+ '?searchField=worldcat_oclc_nbr&query=34731450&east_retentions_operator=equals&east_retentions=any&in_hathi=',
+            type: 'get',
+            success: function(data) {
+                $("#loading").hide();
+                //console.log(data) ;
+                $("#results").html(data);
+            },
+            error: function(xhr, desc, err) {
+                $("#loading").hide();
+                $("#results").html("An error occurred - try again. <p> <button><a href='/'>New Search</a></button></p>");
+                console.log(xhr);
+                console.log("Details: " + desc + "\nError:" + err);
+            }
+        }); // end ajax call
+
     });
 
-    //$( "#querydiv" ).hide();
 
-/*
-    $( "#querydiv" ).show();
-    var q = document.URL.split('?')[1];
-    console.log(q);
-    $.ajax({
-        url: '/testing/resultsblock?'+ q,
-        type: 'get',
-         success: function(data) {
-             $("#loading").hide();
-             //console.log(data) ;
-            $("#results").html(data);
-        },
-        error: function(xhr, desc, err) {
-            $("#loading").hide();
-            $("#results").html("An error occurred - try again. <p> <button><a href='/'>New Search</a></button></p>");
-            console.log(xhr);
-            console.log("Details: " + desc + "\nError:" + err);
-        }
-    }); // end ajax call
-
-*/
 </script>
 
 <?php include 'includes/footer.html';?>

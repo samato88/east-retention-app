@@ -1,7 +1,6 @@
 <?php include './includes/header.html';?>
 
 <!--<form name="queryForm" id="queryForm" action="/testing/results" method="get">-->
-
 <form name="queryForm" id="queryForm" action="/searchresults" method="get">
 
     <div id="numberError"></div>
@@ -58,7 +57,7 @@
     </p>
     <hr />
 
-    Retained by (optional): <!--this should actually be constructed from DB inst_id table -->
+    <span class="easttext">Retained by</span> (note that selections are "OR"ed together): <!--this should actually be constructed from DB inst_id table -->
     <table>
         <tr>
             <td><input type="checkbox" name="any"  id="any" value="any">Any (default) </input></td>
@@ -123,7 +122,7 @@
     </table>
 
 </form>
-<?php include 'includes/footer.html';?>
+<?php include './includes/footer.html';?>
 
 <script type="text/javascript">
 

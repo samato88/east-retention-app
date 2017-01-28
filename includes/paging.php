@@ -1,15 +1,16 @@
 <?php
 
-function paging($page, $to, $count) {
+function paging($page, $to, $count, $testing) {
 
     $querystring =  $_SERVER['QUERY_STRING'] ;
-    $self = htmlspecialchars($_SERVER['PHP_SELF']) ;
-    $self = preg_replace('/\.php.*/', "", $self);
+   // $self = htmlspecialchars($_SERVER['PHP_SELF']) ;
+    //$self = preg_replace('/\.php.*/', "", $self);
 
-    if ( preg_match("/testing/", $self) ) {
-        $testing = "testing/" ;
-    } else { $testing = "" ;}
+    //if ( preg_match("/testing/", $self) ) {
+     //   $testing = "testing/" ;
+    //} else { $testing = "" ;}
 
+   // echo "<h1>testing is: $testing</h1>";
     $pagination = "" ;
     $end = "" ;
 

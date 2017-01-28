@@ -19,6 +19,7 @@ include 'includes/remove_stopwords.php'; // remove_stopwords function
 include 'includes/test_input.php'; // test_input function
 include 'includes/getLibNames.php'; // getLibNames, getLibLimitName functions
 include 'includes/listLimits.php'; // list search limited by in results
+include 'includes/isTesting.php'; // is this the testing site
 include 'includes/paging.php'; // pagination
 
 
@@ -148,7 +149,7 @@ try {
 
 // pagination
 $to = $limit * $page  ;
-list ($pagination, $newsearch, $end) = paging($page, $to, $count) ;
+list ($pagination, $newsearch, $end) = paging($page, $to, $count, $testing) ;
 
 
 if ($count == 0 ) {

@@ -5,7 +5,8 @@ function test_input($data, $testfield) {
     if ($testfield == "query") {
         if ($_GET["searchField"] == 'worldcat_oclc_nbr') {
             if ( filter_var($data, FILTER_VALIDATE_INT)===false)  {
-                exit("OCLC Number must contain only digits!  ");
+               // include 'paging.php'; // pagination
+                exit("OCLC Number must contain only digits!  <a href='/'><button class='easttext'>New Search</button></a>");
             }
         } else { // is a title search or something random someone put in!
             if (strlen($data)>250) {

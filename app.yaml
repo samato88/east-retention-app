@@ -27,7 +27,7 @@ handlers:
   script: /about.html
 
 # TESTING
-- url: /testing
+- url: /testing/
   script: /testing/index.html
 
 - url: /testing/about
@@ -49,6 +49,9 @@ handlers:
 
 - url: /testing/edit/updates
   script: /testing/edit/searchRemove.html
+
+- url: /testing/edit/resultsblock
+  script: /testing/edit/eresultsblock.php
 
 - url: /testing/twig
   script: /testing/twig.php5
