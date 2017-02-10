@@ -12,25 +12,38 @@ include 'includes/header.html';
 
 $libid = test_user($user->getEmail()) ;
 
-echo '<p>You are logged in as: ' . htmlspecialchars($user->getEmail()) . ', ' ;
-    echo 'associated with  ' ;
-    echo  getLibLimitName($libid, $db) ;
-    echo  '</p>';
+$action = $_POST{'action'} ;
+$oclc = $_POST{'oclc'} ;
+$libname = getLibLimitName($libid, $db);
+
+switch ($action) {
+    case "revoke":
+        $message = "<b>Revoke the retention</b>" ;
+        break;
+    case "change":
+        $message = "Update the OCLC number" ;
+        break;
+    case "transfer":
+        $message = "Transfer the retention" ;
+        break;
+    default:
+        $message = "{..hmm, Sorry, I didn't understand what you wanted to do...} " ;
+} // end switch
+
+
+echo <<<EOT
+    <p>Are you sure you want to $message for OCLC number {$oclc} for $libname?
+    </p>
+    <form class="centerRow">
+        <input id="submit_button" type="submit" value="Yes, please continue" />
+    </form>
+    <p></p>
+
+EOT;
+
 ?>
 
-<div>
-    <form name="queryForm" id="queryForm"  method="post">
-        <div id="numberError"></div>
-        <span class="easttext">SEARCH:</span>
 
-        <select name="searchField" id="searchField">
-          <option value="worldcat_oclc_nbr">OCLC Number</option>
-        </select>
-        <input type="text" size="20" name="query" id="query" value="34731450" />
-        <input type="hidden" id="libid" name="libid" value="<?php echo $libid ?>" />
-        <input id="submit_button" type="submit" value="Search" />
-    </form>
-</div>
 
 <div id="loading" class="centerRow">
     <h2 class="easttext">Querying...</h2>
@@ -41,7 +54,7 @@ echo '<p>You are logged in as: ' . htmlspecialchars($user->getEmail()) . ', ' ;
 
 <script type="text/javascript">
     $( "#loading" ).hide(); // hide on load
-
+/*
     $( "#queryForm" ).submit(function( event ) {
         event.preventDefault();
         var oclc = $("#query").val().trim() ;
@@ -77,7 +90,7 @@ echo '<p>You are logged in as: ' . htmlspecialchars($user->getEmail()) . ', ' ;
 
     }
     });
-
+*/
 </script>
 
 <?php include 'includes/footer.html';?>

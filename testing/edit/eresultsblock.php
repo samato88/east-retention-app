@@ -35,7 +35,7 @@
 
     $displaylimit = 25;
     $limit = 25 ;
-    $fields = "worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, hathi_url, titlesearch";
+    $fields = "worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, hathi_url, titlesearch, bibid";
 
 
     if( isset($_GET{'page'} ) ) {
@@ -73,15 +73,7 @@
         } else  {
             $sql = "SELECT " . $fields . ", MATCH (" . $field . ") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND titlesearch LIKE '" . $titlelike . "%'  FROM bib_info  WHERE MATCH ( " . $field . ") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND titlesearch LIKE '" . $titlelike . "%'";
         }
-        //$sql = "SELECT " . $fields . ", MATCH (". $field .") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND title LIKE '" . $query ."%'  FROM bib_info  WHERE MATCH ( " . $field .") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND title LIKE '" . $query ."%'";
 
-        //$sql = "SELECT " . $fields . ", MATCH (". $field .") AGAINST ('" . $query . "' IN NATURAL LANGUAGE MODE) as Relevance FROM bib_info  WHERE MATCH ( " . $field .") AGAINST ('" . $query . "' IN NATURAL LANGUAGE MODE)";
-        //SELECT worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, MATCH (title) AGAINST ('"books"' IN NATURAL LANGUAGE MODE) as Relevance FROM bib_info WHERE MATCH ( title) AGAINST ('"books"' IN NATURAL LANGUAGE MODE) and (library_id = 1 or library_id=4934)
-        //SELECT worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, MATCH (title) AGAINST ('"harry potter and the goblet of fire"' IN NATURAL LANGUAGE MODE) as Relevance FROM bib_info WHERE MATCH (title) AGAINST ('"harry potter and the goblet of fire"' IN NATURAL LANGUAGE MODE) and hathi_pd = 'F'
-        //SELECT worldcat_oclc_nbr FROM bib_info WHERE MATCH (title) AGAINST ('books' IN NATURAL LANGUAGE MODE)-slow
-        //SELECT worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, MATCH (title) AGAINST ('books' IN NATURAL LANGUAGE MODE) as Relevance FROM bib_info HAVING Relevance > 0.1 ORDER BY Relevance DESC - slow - 6 seconds
-        //SELECT worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, MATCH (title) AGAINST ('books' IN NATURAL LANGUAGE MODE) as Relevance FROM bib_info ORDER BY Relevance DESC - faster 1 second
-        //$sort = "  GROUP BY worldcat_oclc_nbr ORDER BY title_sort " ;
     } else { // only other option is worldcat_oclc_nbr
         $sql = "SELECT " . $fields . " FROM bib_info  WHERE worldcat_oclc_nbr = ". $query ;
     }
@@ -151,7 +143,8 @@
     $to = $limit * $page  ;
     list ($pagination, $newsearch, $end) = paging($page, $to, $count, $testing) ;
 
-    if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "SQL:<br/> " . $sql . " <br/>" ;}
+    // if on testing site
+   // if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "SQL:<br/> " . $sql . " <br/>" ;}
 
     if ($count == 0 ) {
         // find and report any search and library name limits here
@@ -174,7 +167,7 @@
         } else { // oclc search
             echo'<p>You searched OCLC number : ' . $query . '</p>' ;
         }
-
+        echo "<a href='/testing/edit'><button class='easttext'>New Edit</button></a>";
         echo $newsearch ;
         echo $pagination ;
         echo $end ;
@@ -200,30 +193,57 @@
             } else { // hathi not T
                 $hathi = "Not In Hathi" ;
             }
-
-            $libNames = getLibNames($OCLC, $db) ;
-
+            $option = listLibraries($db, $_GET['libraries'][0]);
             echo <<<EOT
-      	<div class="entry" style="border:solid 1px black; margin-top:3px">
+      	<div class="edit" >
         	<b>OCLC Number: </b><a href="http://www.worldcat.org/oclc/{$OCLC}">$OCLC</a><br />
 			<b>TITLE:</b> {$row['title']} <br />
-			<b>EAST Retentions: </b> {$row['east_retentions']} <br />
-		 	<b>Hathi: </b> $hathi<br />
-		 	<b>Retained by: </b> $libNames
+		 	
+		 
+		    <blockquote>
+		     <b>Options:</b>
+		 	 <form id="update" method="post" action="/testing/edit/updateRetention">
+		 	   <input type="hidden" name="bibid" value="{$row['bibid']}" />
+		 	   <input type="hidden" name="action" value="revoke" />
+		 	   <input type="hidden" name="oclc" value="{$OCLC}"/>
+               <button>Revoke Retention<sup>*</sup></button>
+             </form>  
+              <br />
+             <form id="change" method="post" action="/testing/edit/updateRetention">
+               <input type="hidden" name="bibid" value="{$row['bibid']}" />
+               <button>Change OCLC Number to: </button> 
+               <input id="newnumber" name="newnumber" type=text />
+               <input type="hidden" name="action" value="change" />
+               <input type="hidden" name="oclc" value="{$OCLC}" />
+               <input id="submit_button" type="submit" value="Submit Change" />
+             </form> 
+             <br />
+             <form id="change" method="post" action="/testing/edit/updateRetention">
+                <input type="hidden" name="bibid" value="{$row['bibid']}" />
+             	<input type="hidden" name="action" value="transfer" />
+		 	    <input type="hidden" name="oclc" value="{$OCLC}" />
+                <button>Transfer Retention To: </button>
+                <select>
+                  {$option}
+                </select>
+                <input id="submit_button" type="submit" value="Transfer" />
+             </form>
+             
+            </blockquote>
+             
+             <p><sup>*</sup>Retention reversals must adhere to the <a href="https://goo.gl/eOT4B3">EAST
+                Major Operating policies</a> and be reported to the EAST Operating Committee</p>
 		</div>
 EOT;
 
         } // end foreach OCLC Number
 
-
+        echo "<a href='/testing/edit'><button class='easttext'>New Edit</button></a>";
         echo $newsearch ;
         echo $pagination ;
         echo $end ;
 
-       /* if( isset($_GET{'page'} ) ) {
-            include '../includes/footer.html';
-        }
-       */
+
     } else { // query failed
         echo 'The SQL query failed with error '.$db->errorCode;
     } // end of query and page display
@@ -232,7 +252,5 @@ EOT;
 
     ?>
 
-<script>
-    $( ".entry:even" ).css( "background-color", "#dcdcdc");
-</script>
+
 

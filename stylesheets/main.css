@@ -33,4 +33,11 @@ a button {
     content:url("/images/eastlogo-small.png")
 }
 
+.edit {
+    border:solid 1px black;
+    padding:5px;
+    background-color:lightblue;
+    margin: 5px ;
+}
+
 #faq {margin-left: 10px ;}

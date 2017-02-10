@@ -53,6 +53,9 @@ handlers:
 - url: /testing/edit/resultsblock
   script: /testing/edit/eresultsblock.php
 
+- url: /testing/edit/updateRetention
+  script: /testing/edit/updateRetention.html
+
 - url: /testing/twig
   script: /testing/twig.php5
 

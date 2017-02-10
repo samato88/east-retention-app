@@ -25,4 +25,22 @@ function getLibLimitName($id, $db) {  // libnames to report on you searched limi
     $name = $row[0];
     return $name ;
 } // end getLibLimitName
+
+function listLibraries($db, $id) {
+    $sql = "SELECT library, Inst_ID FROM inst_id ORDER BY library" ;
+    $nameresults = $db->query($sql) ;
+    $library_names = array();
+    foreach ($nameresults as $row) {
+        $libid = $row['Inst_ID'] ;
+
+        if ($libid == $id) {
+            next ;
+        } // don't include current lib in select list
+        else {
+            $libname = $row['library'];
+            $option .= "<option value='$libid'>$libname</option>";
+        }
+    } // end foreach nameresult
+    return $option ;
+} // end listLibraries
 ?>
