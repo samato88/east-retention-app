@@ -4,10 +4,14 @@ function test_input($data, $testfield) {
     $data = trim($data);
     if ($testfield == "query") {
         if ($_GET["searchField"] == 'worldcat_oclc_nbr') {
-            if ( filter_var($data, FILTER_VALIDATE_INT)===false)  {
-               // include 'paging.php'; // pagination
-                exit("OCLC Number must contain only digits!  <a href='/'><button class='easttext'>New Search</button></a>");
+	    $data = preg_replace('/^0+/', "", $data); // strip leading zeros		
+            if (filter_var($data, FILTER_VALIDATE_INT) === false) {
+                exit("OCLC Number must contain only digits! <a href='/'><button class='easttext'>New Search</button></a>");
             }
+        } elseif ($_GET["searchField"] == 'isbn') {
+                //SEA HERE - add leading 0, strip -?
+               // $data = preg_replace('/-?/', "", $data);
+
         } else { // is a title search or something random someone put in!
             if (strlen($data)>250) {
                 $data = substr($data, 0, 249); # no titles longer than 250
