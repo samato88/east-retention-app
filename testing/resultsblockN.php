@@ -76,7 +76,13 @@
                    // check if OCLC in is table of oclcs updated by SCS
                    //  SEA HERE - need to note found but not use for search unless no other results
                    $sqltest = "SELECT worldcat_oclc_nbr FROM local_worldcat_oclc_nbr WHERE local_oclc_nbr =".$query." GROUP BY worldcat_oclc_nbr";
+                   $sqltestn = "SELECT worldcat_oclc_nbr FROM local_worldcat_oclc_nbr WHERE local_oclc_nbr =".$query ;
                    try {
+
+                       $updatedOCLCQuery = $db->query($sqltestn);
+                       $updatedOCLCCount = $updatedOCLCQuery->rowCount();
+                       $updatedOCLCResults = $updatedOCLCQuery->fetchAll();
+
                        $updatedOCLC = $db->query($sqltest)->fetchAll()[0][0];
                    } catch (PDOException $e) {
                        print "Error!: " . $e->getMessage() . "<br/>";
@@ -180,6 +186,7 @@
                                    } else { // oclc search
                                        echo'<p>You searched OCLC number : ' . $query  ;
                                        //SEA HERE
+                                       echo '<h1>' . $updatedOCLCCount .' </h1>' ;
                                        if ($query != $resulting[0][0]) {
                                            echo " <i>(SCS mapped this OCLC number to " . $resulting[0][0] . ")</i>" ;
                                        }

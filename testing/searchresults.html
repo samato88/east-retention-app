@@ -17,7 +17,7 @@
     var q = document.URL.split('?')[1];
     console.log(q);
     $.ajax({
-        url: '/testing/resultsblock?'+ q,
+        url: '/testing/resultsblockN?'+ q,
         type: 'get',
          success: function(data) {
             $("#loading").hide();

@@ -39,6 +39,9 @@ handlers:
 - url: /testing/resultsblock
   script: /testing/resultsblock.php
 
+- url: /testing/resultsblockN
+  script: /testing/resultsblockN.php
+
 ######  TESTING CRUD
 - url: /testing/edit
   script: /testing/edit/index.php
