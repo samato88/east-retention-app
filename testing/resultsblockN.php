@@ -9,6 +9,8 @@
     //echo 'hathistatus "' . htmlspecialchars($_GET["hathistatus"]) . '"<br />';
     //echo 'libraries  "' . htmlspecialchars($_GET["libraries"]) . '"<br />';
     //echo '<hr />'
+    // test numbers:  alt: 9539920   real: 10025928
+    // test numbers: 19216337  - both real and mapped elsewhere
     ?>
 
     <?php
@@ -75,22 +77,33 @@
                } else if ($field === "worldcat_oclc_nbr") {
                    // check if OCLC in is table of oclcs updated by SCS
                    //  SEA HERE - need to note found but not use for search unless no other results
-                   $sqltest = "SELECT worldcat_oclc_nbr FROM local_worldcat_oclc_nbr WHERE local_oclc_nbr =".$query." GROUP BY worldcat_oclc_nbr";
-                   $sqltestn = "SELECT worldcat_oclc_nbr FROM local_worldcat_oclc_nbr WHERE local_oclc_nbr =".$query ;
-                   try {
+                //  $sqltest = "SELECT worldcat_oclc_nbr FROM local_worldcat_oclc_nbr WHERE local_oclc_nbr =".$query." GROUP BY worldcat_oclc_nbr";
+                    $sqltestn = "SELECT inst_id, worldcat_oclc_nbr FROM local_worldcat_oclc_nbr WHERE local_oclc_nbr =".$query ;
+                    try {
+                        $altOCLCQuery = $db->query($sqltestn);
+                        $altOCLCCount = $altOCLCQuery->rowCount();
+                        $altOCLCResults = $altOCLCQuery->fetchAll();
 
-                       $updatedOCLCQuery = $db->query($sqltestn);
-                       $updatedOCLCCount = $updatedOCLCQuery->rowCount();
-                       $updatedOCLCResults = $updatedOCLCQuery->fetchAll();
+                        //  $altOCLC = $db->query($sqltest)->fetchAll()[0][0];
+                        } catch (PDOException $e) {
+                          print "Error!: " . $e->getMessage() . "<br/>";
+                          die();
+                        }
 
-                       $updatedOCLC = $db->query($sqltest)->fetchAll()[0][0];
-                   } catch (PDOException $e) {
-                       print "Error!: " . $e->getMessage() . "<br/>";
-                       die();
-                   }
-                   if ($updatedOCLC != "") { $oquery = $updatedOCLC ; } else { $oquery = $query ; }
+                        if ($altOCLCResults !== false && $altOCLCCount !== false) {
+                            foreach ($altOCLCResults as $row) {
+                                $nOCLC = $row['worldcat_oclc_nbr'];
+                                $nLib = $row['inst_id'];
+                                $alt_lib[$nLib] = $nOCLC ;
+                                $alt_oclc[$nOCLC] = $alt_oclc[$nOCLC] . ";" . $nLib ;
+                            }
+                        }
 
-                   $sql = "SELECT " . $fields . " FROM bib_info  WHERE bib_info.worldcat_oclc_nbr = ". $oquery ;
+                     // if ($updatedOCLC != "") { $oquery = $updatedOCLC ; } else { $oquery = $query ; }
+
+                      //$sql = "SELECT " . $fields . " FROM bib_info  WHERE bib_info.worldcat_oclc_nbr = ". $oquery ;
+
+                   $sql = "SELECT " . $fields . " FROM bib_info  WHERE bib_info.worldcat_oclc_nbr = ". $query ;
 
                } else { //  ($field === "isbn") {
                    $sql = "SELECT " . $fields . " FROM bib_info  WHERE isbn = '" . $query . "'" ;
@@ -147,7 +160,7 @@
                      $countQuery = $sql ;
                      $sql = $sql .  " LIMIT " . $offset . "," . $limit ;
 
-                        //   try/catch here doesn't seem to do any good - still hangs on mysql gone away error
+                        //   try/catch doesn't solve hanging mysql gone away error
                             try {
                                 $resultQuery = $db->query($sql);
                                 $resultCount = $db->query($countQuery);
@@ -186,7 +199,7 @@
                                    } else { // oclc search
                                        echo'<p>You searched OCLC number : ' . $query  ;
                                        //SEA HERE
-                                       echo '<h1>' . $updatedOCLCCount .' </h1>' ;
+                                       echo '<h1>' . $altOCLCCount . ' - ' . count($alt_oclc) . ' </h1>' ;
                                        if ($query != $resulting[0][0]) {
                                            echo " <i>(SCS mapped this OCLC number to " . $resulting[0][0] . ")</i>" ;
                                        }
