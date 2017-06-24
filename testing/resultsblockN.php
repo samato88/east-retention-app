@@ -11,6 +11,7 @@
 //echo '<hr />'
 // test numbers:  alt: 9539920   real: 10025928
 // test numbers: 19216337  - both real and mapped elsewhere
+// test numbers:  182681 - mapped to more than one oclc
 ?>
 
 <?php
@@ -157,19 +158,14 @@ if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "
 
 if ($count_rowCount == 0 ) { //no search results in bib_info
 
-    if ( count($alt_lib) > 0) { // check if there was an alt oclc number search
-        foreach ($alt_oclc as $key => $value ) { // $mappedOCLC will be random if more than one, that's okay
-            $mappedOCLC = $key ;
-            foreach ($value as $libid) {
-                $librariesAlt[] = $librariesAlt . getLibLimitName($libid, $db) ;
-            }
-            $searchlink = '<a href="/searchresults?searchField=worldcat_oclc_nbr&query='.$key.'&east_retentions_operator=equals&east_retentions=any&in_hathi=">'.$key.'</a>' ;
-            $message = " <i>(N.B.: SCS mapped this OCLC number to ".$searchlink." for ". join(", ",$librariesAlt)."</i><br/>" ;
-        }
-        $newSQL = "SELECT " . $fields . " FROM bib_info  WHERE bib_info.worldcat_oclc_nbr = ". $mappedOCLC ;
+    if ( count($alt_lib) > 0) { // if there was an alt oclc number search
+        extract(getMessage($alt_oclc, $db), EXTR_PREFIX_ALL, "message"); //$message_text , $message_mappedOCLC
+
+        $newSQL = "SELECT " . $fields . " FROM bib_info  WHERE bib_info.worldcat_oclc_nbr = ". $message_mappedOCLC ;
         extract(runQuery($newSQL, $sql_limits, $db), EXTR_PREFIX_ALL, "mapped"); //$mapped_Results  $mapped_rowCount
         if ($mapped_rowCount > 0) {
-            echo $message ;
+            showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc );
+            echo $message_text;
             showResults($mapped_Results, $newsearch, $pagination, $end, $db);
         } else { // this shouldn't happen- if in alt table should be in bib table too
             showNoResults($query, $appliedLimits, $limitlibraries, $limitlibrariesnamesstring, $newsearch) ;
@@ -180,25 +176,10 @@ if ($count_rowCount == 0 ) { //no search results in bib_info
     }
 
 } else { // there are results
-    if ($field === 'titlesearch') {
-        if ($count_rowCount < $limit) { $limit = $count_rowCount ;}
-        if ($to > $count_rowCount) { $to = $count_rowCount ; }
-        echo '<h3>Showing ' ;
-        echo  $offset + 1 . " to $to  of $count_rowCount results, sorted by relevance</h3>" ;
-        echo'<p><b>You searched title</b> : ' . $query ;
-        listLimits($appliedLimits, $limitlibrariesnamesstring );
-        if (isset($limitlibrariesnamesstring)) {echo  $limitlibrariesnamesstring ; }
-        echo '</p>' ;
-    } else { // oclc search
-        echo'<p>You searched OCLC number : ' . $query  ;
-        //SEA
-        echo '<h1> Numb Alt OCLCs: ' . count($alt_oclc) . ' </h1>' ;
-        if ($query != $result_Results[0][0]) {
-            echo " <i>(SCS mapped this OCLC number to " . $result_Results[0][0] . ")</i>" ;
-        }
-        echo '</p>' ;
-        showResults($result_Results, $newsearch, $pagination, $end, $db);
-    }
+    extract(getMessage($alt_oclc, $db), EXTR_PREFIX_ALL, "message"); //$message_text , $message_mappedOCLC
+    showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc );
+    echo $message_text;
+    showResults($result_Results, $newsearch, $pagination, $end, $db);
 } // end else not zero results
 
 
@@ -206,7 +187,8 @@ $db = null ;
 
 ?>
 
-<?php function showResults ($entries, $newsearch, $pagination, $end, $db) {
+<?php
+function showResults ($entries, $newsearch, $pagination, $end, $db) {
     echo $newsearch ;
     echo $pagination ;
     echo $end ;
@@ -252,7 +234,8 @@ EOT;
     echo $end ;
 } // end showResults
 ?>
-<?php function showNoResults($query, $appliedLimits, $limitlibraries, $limitlibrariesnamesstring, $newsearch) {
+<?php
+function showNoResults($query, $appliedLimits, $limitlibraries, $limitlibrariesnamesstring, $newsearch) {
     // find and report any search and library name limits here
     echo "<b>No results for </b>'$query'";
     listLimits($appliedLimits, $limitlibraries);
@@ -262,7 +245,49 @@ EOT;
     echo "<br />$newsearch";
     }
 ?>
-<?php function runQuery ($sql, $sql_limits, &$db){
+<?php
+function getMessage($alt_oclc, $db) {
+    $messages['text'] = "";
+    $messages['mappedOCLC'] = "";
+
+    // SEA HERE - different messages if alt worldcat > 1 number
+    if ( $alt_oclc ) {
+        foreach ($alt_oclc as $key => $value) { // $mappedOCLC will be random if more than one, that's okay
+            $librariesAlt = array();
+            $mappedOCLC = $key;
+            foreach ($value as $id) { // get library names that have this mapped oclc
+                $librariesAlt[] = getLibLimitName($id, $db);
+            }
+            $searchlink = '<a href="/searchresults?searchField=worldcat_oclc_nbr&query=' . $key . '&east_retentions_operator=equals&east_retentions=any&in_hathi=">' . $key . '</a>';
+            $message = " <i><sup>*</sup>SCS mapped this OCLC number to " . $searchlink . " for " . join(", ", $librariesAlt) . ".</i><br/>";
+            $messages['text'] = $messages['text'] . $message;
+        } // end foreach atl_oclc
+
+        $messages['text'] = "<blockquote>" . $messages['text'] . "</blockquote>" ;
+        $messages['mappedOCLC'] =  $mappedOCLC  ;
+    }
+    return $messages ;
+} // end getMessage
+?>
+<?php
+function showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc ){
+    if ($field === 'titlesearch') {
+        if ($count_rowCount < $limit) { $limit = $count_rowCount ;}
+        if ($to > $count_rowCount) { $to = $count_rowCount ; }
+        echo '<h3>Showing ' ;
+        echo  $offset + 1 . " to $to  of $count_rowCount results, sorted by relevance</h3>" ;
+        echo'<p><b>You searched title</b> : ' . $query ;
+        listLimits($appliedLimits, $limitlibrariesnamesstring );
+        if (isset($limitlibrariesnamesstring)) {echo  $limitlibrariesnamesstring ; }
+        echo '</p>' ;
+    } else { // oclc search
+        echo'<p>You searched OCLC number : ' . $query  ;
+        }
+        echo '</p>' ;
+}
+?>
+<?php
+function runQuery ($sql, $sql_limits, &$db){
     $sql = $sql . $sql_limits ;
     //   try/catch doesn't solve hanging mysql gone away error
     try {
