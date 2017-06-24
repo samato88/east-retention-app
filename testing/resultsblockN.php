@@ -165,8 +165,8 @@ if ($count_rowCount == 0 ) { //no search results in bib_info
         extract(runQuery($newSQL, $sql_limits, $db), EXTR_PREFIX_ALL, "mapped"); //$mapped_Results  $mapped_rowCount
         if ($mapped_rowCount > 0) {
             showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc );
-            echo $message_text;
             showResults($mapped_Results, $newsearch, $pagination, $end, $db);
+            echo $message_text;
         } else { // this shouldn't happen- if in alt table should be in bib table too
             showNoResults($query, $appliedLimits, $limitlibraries, $limitlibrariesnamesstring, $newsearch) ;
         }
@@ -178,8 +178,8 @@ if ($count_rowCount == 0 ) { //no search results in bib_info
 } else { // there are results
     extract(getMessage($alt_oclc, $db), EXTR_PREFIX_ALL, "message"); //$message_text , $message_mappedOCLC
     showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc );
-    echo $message_text;
     showResults($result_Results, $newsearch, $pagination, $end, $db);
+    echo $message_text;
 } // end else not zero results
 
 
@@ -263,7 +263,7 @@ function getMessage($alt_oclc, $db) {
             $messages['text'] = $messages['text'] . $message;
         } // end foreach atl_oclc
 
-        $messages['text'] = "<blockquote>" . $messages['text'] . "</blockquote>" ;
+        $messages['text'] = "<p>" . $messages['text'] . "</p>" ;
         $messages['mappedOCLC'] =  $mappedOCLC  ;
     }
     return $messages ;
@@ -283,6 +283,7 @@ function showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$
     } else { // oclc search
         echo'<p>You searched OCLC number : ' . $query  ;
         }
+        if (count($alt_oclc) > 0) { print "<sup>*</sup>" ; }
         echo '</p>' ;
 }
 ?>
