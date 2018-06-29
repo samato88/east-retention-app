@@ -1,6 +1,6 @@
 <?php
 function getLibNames($nbr, $db) {
-    $nsql = "SELECT opac_url, library_id, lib_holdings, library FROM bib_info, inst_id WHERE worldcat_oclc_nbr = $nbr AND bib_info.library_id = inst_id.Inst_ID" ;
+    $nsql = "SELECT opac_url, library_id, lib_holdings, library FROM bib_info, inst_id WHERE worldcat_oclc_nbr = $nbr AND bib_info.library_id = inst_id.Inst_ID ORDER BY library" ;
     $result = $db->query($nsql) ;
     $library_names = array();
     foreach ($result as $row) {
