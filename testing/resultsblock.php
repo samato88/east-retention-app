@@ -75,17 +75,17 @@ if ($field === "titlesearch")  { // need 3 variants: w/o stopwords, w/o punctuat
 
 } else if ($field === "worldcat_oclc_nbr") { // check here if OCLC also in is table of oclcs updated by SCS
     $sqltestn = "SELECT inst_id, worldcat_oclc_nbr FROM local_worldcat_oclc_nbr WHERE local_oclc_nbr =".$query ;
-    extract(runQuery($sqltestn, '', $db), EXTR_PREFIX_ALL, "alt");
+    extract(runQuery($sqltestn, $db), EXTR_PREFIX_ALL, "alt"); // creates alt_Results
 
     if ($alt_Results !== false && $alt_rowCount !== false) {
-        $alt_lib_ids = array();
+        $alt_lib_ids = array(); // does this ever get used?
         foreach ($alt_Results as $row) {
             $nOCLC = $row['worldcat_oclc_nbr'];
             $nLib = $row['inst_id'];
             $alt_lib[$nLib] = $nOCLC ;
-            $alt_oclc[$nOCLC][] = $nLib; // array of libs for each distinct OCLC
+            $alt_oclc[$nOCLC][] = $nLib; // array of libs for each distinct OCLC, does this work if more than one?
         } // end foreach alt oclc number result
-    } // end if results from query on alt oclc number table
+    } // end if results from query on alt oclc number table, used later??
 
     $sql = "SELECT " . $fields . " FROM bib_info  WHERE bib_info.worldcat_oclc_nbr = ". $query ;
 
@@ -120,7 +120,7 @@ if (isset($in_hathi)) {
 $sql_limits = $sql_limits .  " GROUP BY worldcat_oclc_nbr ORDER BY titlesearch" ;
 
 $countQuery = $sql . $sql_limits;
-$sql_limits = $sql . $sql_limits .   " LIMIT " . $offset . "," . $limit ;
+$sql_limits = $sql_limits .   " LIMIT " . $offset . "," . $limit ;
 $subquery_start = " SELECT sub.* FROM ( " ;
 
 if ($retentions != 'any') { // limit by number of retentions using subquery
@@ -148,17 +148,16 @@ if (isset($limitlibrary)) {
 }
 
 $countQuery = $subquery_start . $countQuery . $subquery_end ;
-$sql_limits = $subquery_start . $sql_limits . $subquery_end ;
+$sql_search = $subquery_start . $sql .  $sql_limits . $subquery_end ;
 
-extract(runQuery($countQuery, '', $db),   EXTR_PREFIX_ALL, "count"); //$count_Results  $count_rowCount
-//extract(runQuery($sql, $sql_limits, $db), EXTR_PREFIX_ALL, "result");//$result_Results $result_rowCount
-extract(runQuery($sql, '', $db), EXTR_PREFIX_ALL, "result");//$result_Results $result_rowCount
+extract(runQuery($countQuery, $db),   EXTR_PREFIX_ALL, "count"); //$count_Results  $count_rowCount
+extract(runQuery($sql_search, $db), EXTR_PREFIX_ALL, "result");//$result_Results $result_rowCount
 
 // pagination
 $to = $limit * $page  ;
 list ($pagination, $newsearch, $end) = paging($page, $to, $count_rowCount, $testing) ;
 
-if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "SQL:<br/> " . $sql_limits . " <br/>" ;}
+if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "1st SQL:<br/> " . $sql_search . " <br/>" ;}
 
 if ($count_rowCount == 0 ) { //no search results in bib_info
 
@@ -166,7 +165,8 @@ if ($count_rowCount == 0 ) { //no search results in bib_info
         extract(getMessage($alt_oclc, $db), EXTR_PREFIX_ALL, "message"); //$message_text , $message_mappedOCLC
 
         $newSQL = "SELECT " . $fields . " FROM bib_info  WHERE bib_info.worldcat_oclc_nbr = ". $message_mappedOCLC ;
-        extract(runQuery($newSQL, $sql_limits, $db), EXTR_PREFIX_ALL, "mapped"); //$mapped_Results  $mapped_rowCount
+        $newSQL = $subquery_start . $newSQL .  $sql_limits . $subquery_end ;
+        extract(runQuery($newSQL, $db), EXTR_PREFIX_ALL, "mapped"); //$mapped_Results  $mapped_rowCount
         if ($mapped_rowCount > 0) {
             showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc );
             showResults($mapped_Results, $newsearch, $pagination, $end, $db);
@@ -293,8 +293,7 @@ function showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$
 }
 ?>
 <?php
-function runQuery ($sql, $sql_limits, &$db){
-    $sql = $sql . $sql_limits ;
+function runQuery ($sql, &$db){
     //   try/catch doesn't solve hanging mysql gone away error
     try {
         $Query = $db->query($sql);
@@ -312,8 +311,6 @@ function runQuery ($sql, $sql_limits, &$db){
 }
 ?>
 <script>
-    $( ".entry" ).css( "position", "relative");
-
     $( ".entry:even" ).css( "background-color", "#dcdcdc");
 </script>
 
