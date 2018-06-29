@@ -38,7 +38,7 @@ if ($_GET["in_hathi"]) {
 
 $displaylimit = 25;
 $limit = 25 ;
-$fields = "bib_info.worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, hathi_url, titlesearch, isbn";
+$fields = "bib_info.worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, hathi_url, titlesearch, isbn, COUNT(*) as cnt";
 
 if( isset($_GET{'page'} ) ) {
     $page = test_input($_GET{'page'}, "page");
@@ -154,7 +154,7 @@ extract(runQuery($sql, $sql_limits, $db), EXTR_PREFIX_ALL, "result");//$result_R
 $to = $limit * $page  ;
 list ($pagination, $newsearch, $end) = paging($page, $to, $count_rowCount, $testing) ;
 
-if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "SQL:<br/> " . $sql . " <br/>" ;}
+if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "SQL:<br/> " . $sql . $sql_limits . " <br/>" ;}
 
 if ($count_rowCount == 0 ) { //no search results in bib_info
 
@@ -218,10 +218,10 @@ function showResults ($entries, $newsearch, $pagination, $end, $db) {
         $libNames = getLibNames($OCLC, $db) ;
 
         echo <<<EOT
-        <div class="entry" style="border:solid 1px black; margin-top:3px">
+        <div class="entry" style="border:solid 1px black; margin-top:3px; position: relative;">
              <b>OCLC Number: </b><a href="http://www.worldcat.org/oclc/{$OCLC}">$OCLC</a><br />
              <b>TITLE:</b> {$row['title']} <br />
-             <b>EAST Retentions: </b> {$row['east_retentions']} <br />
+             <b>EAST Retentions: </b> {$row['cnt']} <br />
              <b>Hathi: </b> $hathi<br />
              <b>Retained by: </b> $libNames
         </div>
@@ -307,6 +307,8 @@ function runQuery ($sql, $sql_limits, &$db){
 }
 ?>
 <script>
+    $( ".entry" ).css( "position", "relative");
+
     $( ".entry:even" ).css( "background-color", "#dcdcdc");
 </script>
 

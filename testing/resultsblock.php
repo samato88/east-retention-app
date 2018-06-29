@@ -38,7 +38,7 @@ if ($_GET["in_hathi"]) {
 
 $displaylimit = 25;
 $limit = 25 ;
-$fields = "bib_info.worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, hathi_url, titlesearch, isbn";
+$fields = "bib_info.worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, hathi_url, titlesearch, isbn, library_id, COUNT(*) as cnt";
 
 if( isset($_GET{'page'} ) ) {
     $page = test_input($_GET{'page'}, "page");
@@ -55,7 +55,7 @@ $limitlibrariesnamesstring = "" ;
 if(!empty($_GET['libraries'])){ // Loop to store  values of individual checked checkbox.
     foreach($_GET['libraries'] as $selected){
         $valselected = test_input($selected, "libraries") ;
-        array_push($limitlibraries,  "library_id = " . $valselected) ;
+        array_push($limitlibraries,  "sub.library_id = " . $valselected) ;
         array_push($limitlibrariesnames, getLibLimitName($valselected, $db) );
     } // end foreach library
     $limitlibrary = " AND ( " . implode(' OR ',$limitlibraries) . ")" ;
@@ -93,26 +93,6 @@ if ($field === "titlesearch")  { // need 3 variants: w/o stopwords, w/o punctuat
     $sql = "SELECT " . $fields . " FROM bib_info  WHERE isbn = '" . $query . "'" ;
 } // end else which search field
 
-if ($retentions != 'any') {
-    switch ($retentionsOperator) {
-        case "equals":
-            $retentionsOperator = "=" ;
-            break;
-        case "greaterthan":
-            $retentionsOperator = ">" ;
-            break;
-        case "lessthan":
-            $retentionsOperator = "<" ;
-            break;
-        default:
-            $retentionsOperator = "=" ; // default should never be used unless someone messed w/ url
-    } // end switch
-
-    array_push($appliedLimits,  "EAST retentions $retentionsOperator $retentions") ;
-    $sql_limits = " AND east_retentions $retentionsOperator $retentions" ;
-
-} // end if retentions not any
-
 if (isset($in_hathi)) {
     switch ($in_hathi) {
         case "T":
@@ -137,24 +117,48 @@ if (isset($in_hathi)) {
     $sql_limits = $sql_limits . $hsql ;
 }
 
-if (isset($limitlibrary)) {
-    //$sql = $sql . $limitlibrary ;
-    $sql_limits = $sql_limits . $limitlibrary ;
-}
-
 $sql_limits = $sql_limits .  " GROUP BY worldcat_oclc_nbr ORDER BY titlesearch" ;
 
 $countQuery = $sql . $sql_limits;
-$sql_limits = $sql_limits .   " LIMIT " . $offset . "," . $limit ;
+$sql_limits = $sql . $sql_limits .   " LIMIT " . $offset . "," . $limit ;
+$subquery_start = " SELECT sub.* FROM ( " ;
+
+if ($retentions != 'any') { // limit by number of retentions using subquery
+    switch ($retentionsOperator) {
+        case "equals":
+            $retentionsOperator = "=" ;
+            break;
+        case "greaterthan":
+            $retentionsOperator = ">" ;
+            break;
+        case "lessthan":
+            $retentionsOperator = "<" ;
+            break;
+        default:
+            $retentionsOperator = "=" ; // default should never be used unless someone messed w/ url
+    } // end switch
+    $subquery_end = " ) sub WHERE sub.cnt  $retentionsOperator $retentions" ;
+} // end if retentions not any
+else {
+    $subquery_end = " ) sub WHERE sub.cnt  > 0" ;
+}
+
+if (isset($limitlibrary)) {
+   $subquery_end = $subquery_end . $limitlibrary ;
+}
+
+$countQuery = $subquery_start . $countQuery . $subquery_end ;
+$sql_limits = $subquery_start . $sql_limits . $subquery_end ;
 
 extract(runQuery($countQuery, '', $db),   EXTR_PREFIX_ALL, "count"); //$count_Results  $count_rowCount
-extract(runQuery($sql, $sql_limits, $db), EXTR_PREFIX_ALL, "result");//$result_Results $result_rowCount
+//extract(runQuery($sql, $sql_limits, $db), EXTR_PREFIX_ALL, "result");//$result_Results $result_rowCount
+extract(runQuery($sql, '', $db), EXTR_PREFIX_ALL, "result");//$result_Results $result_rowCount
 
 // pagination
 $to = $limit * $page  ;
 list ($pagination, $newsearch, $end) = paging($page, $to, $count_rowCount, $testing) ;
 
-if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "SQL:<br/> " . $sql . " <br/>" ;}
+if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "SQL:<br/> " . $sql_limits . " <br/>" ;}
 
 if ($count_rowCount == 0 ) { //no search results in bib_info
 
@@ -177,6 +181,7 @@ if ($count_rowCount == 0 ) { //no search results in bib_info
 
 } else { // there are results
     extract(getMessage($alt_oclc, $db), EXTR_PREFIX_ALL, "message"); //$message_text , $message_mappedOCLC
+
     showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc );
     showResults($result_Results, $newsearch, $pagination, $end, $db);
     echo $message_text;
@@ -218,10 +223,10 @@ function showResults ($entries, $newsearch, $pagination, $end, $db) {
         $libNames = getLibNames($OCLC, $db) ;
 
         echo <<<EOT
-        <div class="entry" style="border:solid 1px black; margin-top:3px">
+        <div class="entry" style="border:solid 1px black; margin-top:3px; position: relative;">
              <b>OCLC Number: </b><a href="http://www.worldcat.org/oclc/{$OCLC}">$OCLC</a><br />
              <b>TITLE:</b> {$row['title']} <br />
-             <b>EAST Retentions: </b> {$row['east_retentions']} <br />
+             <b>EAST Retentions: </b> {$row['cnt']} <br />
              <b>Hathi: </b> $hathi<br />
              <b>Retained by: </b> $libNames
         </div>
@@ -307,6 +312,8 @@ function runQuery ($sql, $sql_limits, &$db){
 }
 ?>
 <script>
+    $( ".entry" ).css( "position", "relative");
+
     $( ".entry:even" ).css( "background-color", "#dcdcdc");
 </script>
 

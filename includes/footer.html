@@ -6,6 +6,26 @@
 <a href="https://eastlibraries.org/contact-us">Contact Us</a>
 </div>
 
+<script>
+    /* was using this for displaying holdings but abandoned in favor of css - see .tooltip
+    console.log("test");
+
+    $(document).ready(function(){
+
+        $( '#results').on( "mouseenter", ".holdings", function() { //delegates to all dynamically created children
+          //  $(this).next('div').css('top', '500px');
+            $(this).next('div').show();
+           // console.log( $( this ).text() );
+        });
+
+        $( '#results').on( "mouseleave", ".holdings", function() { //delegates to all dynamically created children
+            $(this).next('div').hide();
+          //  console.log( $( this ).text() );
+        });
+    }); // end document.ready
+*/
+
+</script>
 
 <?php // exclude analytics from local testing pages
     include 'includes/isTesting.php'; // is this the testing site

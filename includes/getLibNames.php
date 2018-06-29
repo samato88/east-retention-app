@@ -1,18 +1,36 @@
 <?php
 function getLibNames($nbr, $db) {
-    $nsql = "SELECT opac_url, library_id, library FROM bib_info, inst_id WHERE worldcat_oclc_nbr = $nbr AND bib_info.library_id = inst_id.Inst_ID" ;
+    $nsql = "SELECT opac_url, library_id, lib_holdings, library FROM bib_info, inst_id WHERE worldcat_oclc_nbr = $nbr AND bib_info.library_id = inst_id.Inst_ID" ;
     $result = $db->query($nsql) ;
     $library_names = array();
     foreach ($result as $row) {
         $id = $row['library_id'] ;
         $url = $row['opac_url'] ;
         $name = trim($row['library']) ;
+        $holdings = $row[lib_holdings] ;
 
         if ($url !="") {
-            $name = '<a href="' . $url . '">' . $name . "</a>" ;
+            $name = '<div class="tooltip"><a href="' . $url . '">' . $name . "</a>";
+            if ($holdings != "") { // if holdings available
+                $name = $name .
+                    "<span class='tooltiptext' >" . $id . $holdings . "</span>";
+            }
+            $name = $name . "</div>" ;
+        } # end if library url
+
+  /*  SEA notes - this sort of worked but positioning was off - css easier than jquery!
+        if ($url !="") {
+            $name = '<a class="holdings" href="' . $url . '">' . $name . "</a>" ;
+  //          if ($holdings !="") {
+                $name = $name .
+                "<div class='enum' id=\"' . $id . '\" style='display:none; border:solid 1px black; padding:5px;
+                    background-color:whitesmoke; margin: 5px ; position: absolute; top:9px;'>"
+                    . $id . $holdings . "</div>";
+  //          }
         }
+ */
+
         array_push($library_names,  $name) ;
-        //$library_names = $library_names . $name ;
     } // end foreach row
     return join(', ',$library_names);
 } // end getLibNames
