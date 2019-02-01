@@ -36,9 +36,9 @@ if ($_GET["in_hathi"]) {
     $in_hathi = test_input($_GET["in_hathi"], "in_hathi");
 }
 
-/*if ($_GET["in_ia"]) {  SEA working here
+if ($_GET["in_ia"]) {
     $in_ia = test_input($_GET["in_ia"], "in_ia");
-}*/
+}
 
 if ($_GET["rectype"]) { // right now only using to limit to serials
     $rectype = 's';
@@ -131,13 +131,21 @@ if (isset($in_hathi)) {
     $sql_limits = $sql_limits . $hsql ;
 }
 
-/*if (isset($in_ia)) { SEA working here
-
+if (isset($in_ia)) { //SEA working here
+   switch ($in_ia) {
+       case "T":
+           $hsql = " AND internetarchive = 'y'" ;
+           $h = " in Internet Archives";
+           break ;
+       case "F":
+           $hsql = " AND (internetarchive = 'n' OR internetarchive is null)" ;
+           $h = " not in Internet Archives";
+           break ;
     }
 
     array_push($appliedLimits,  $h) ;
     $sql_limits = $sql_limits . $hsql ;
-}*/
+}
 
 
 

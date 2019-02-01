@@ -34,7 +34,7 @@ function test_input($data, $testfield) { //http://php.net/manual/en/filter.filte
         }
     } elseif ($testfield ==  "libraries" ) {
         $data = filter_var($data, FILTER_SANITIZE_NUMBER_INT);
-    } elseif ($testfield == "searchField" || $testfield == "east_retentions_operator" || $testfield == "in_hathi" || $testfield == "rectype") {
+    } elseif ($testfield == "searchField" || $testfield == "east_retentions_operator" || $testfield == "in_hathi" || $testfield == "rectype" || $testfield = "in_ia") {
         $data = filter_var($data, FILTER_SANITIZE_STRING);
     }
     //$data = stripslashes($data);
