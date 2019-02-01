@@ -36,10 +36,6 @@ if ($_GET["in_hathi"]) {
     $in_hathi = test_input($_GET["in_hathi"], "in_hathi");
 }
 
-/*if ($_GET["in_ia"]) {  SEA working here
-    $in_ia = test_input($_GET["in_ia"], "in_ia");
-}*/
-
 if ($_GET["rectype"]) { // right now only using to limit to serials
     $rectype = 's';
     //$rectype = test_input($_GET["rectype", "rectype");
@@ -47,7 +43,7 @@ if ($_GET["rectype"]) { // right now only using to limit to serials
 
 $displaylimit = 25;
 $limit = 25 ;
-$fields = "bib_info.worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, hathi_url, titlesearch, isbn, library_id, issn, rectype, internetarchive, internetarchive_url, COUNT(*) as cnt";
+$fields = "bib_info.worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, hathi_url, titlesearch, isbn, library_id, issn, rectype, COUNT(*) as cnt";
 
 if( isset($_GET{'page'} ) ) {
     $page = test_input($_GET{'page'}, "page");
@@ -130,16 +126,6 @@ if (isset($in_hathi)) {
     array_push($appliedLimits,  $h) ;
     $sql_limits = $sql_limits . $hsql ;
 }
-
-/*if (isset($in_ia)) { SEA working here
-
-    }
-
-    array_push($appliedLimits,  $h) ;
-    $sql_limits = $sql_limits . $hsql ;
-}*/
-
-
 
 if (isset($rectype)){
     array_push($appliedLimits, "Serials/Journals" ) ;
@@ -236,26 +222,31 @@ function showResults ($entries, $newsearch, $pagination, $end, $db) {
         $hathi_pd = $row['hathi_pd'];
         $hathi_ic = $row['hathi_ic'];
         $hathi_url = $row['hathi_url'];
-        $ia = $row['internetarchive'];
-        $ia_url = $row['internetarchive_url'];
         $isbn = $row['isbn'];
 
 
         if ($hathi === 'T') {
             if ($hathi_pd === 'T') {
-                $hathi_message = "Hathi Public Domain" ;
-            } else {// if ($hathi_ic === 'T') {
-                $hathi_message = "Hathi In Copyright" ;
+                $hathi = "Hathi Public Domain" ;
+            } else if ($hathi_ic === 'T') {
+                $hathi = "Hathi In Copyright" ;
+            } else {
+                $hathi = "In Hathi" ;
             }
-            $hathi_message = '<a href="' . $hathi_url . '">' . $hathi_message . '</a>' ;
+            $hathi = '<a href="' . $hathi_url . '">' . $hathi . '</a>' ;
         } else { // hathi not T
-            $hathi_message = '' ;
+            $hathi = "Not In Hathi" ;
         }
 
         if ($ia === 'y') {
-            $ia_message = '&nbsp;&nbsp;<a href="' . $ia_url . '">Internet Archive</a>' ;
-        }  else {
-            $ia_message = '' ;
+            if ($ia_pd === 'y') {
+                $ia_message = "IA Public Domain" ;
+            } else  {
+                $ia_message = "IA Restricted" ;
+            }
+            $ia_message = '<a href="' . $ia_url . '">' . $ia_message . '</a>' ;
+        } else { // ia not y
+            $ia_message = "Not In Internet Archive" ;
         }
 
         $libNames = getLibNames($OCLC, $db) ;
@@ -270,14 +261,10 @@ EOT1;
         }
         echo <<<EOT2
              <b>EAST Retentions: </b> {$row['cnt']} <br />
+             <b>Hathi: </b> $hathi &nbsp;&nbsp;<b>Internet Archive: </b>$ia_message <br />
              <b>Retained by: </b> $libNames
+        </div>
 EOT2;
-        if ($hathi_message != '' || $ia_message != '') {
-            echo "<br /><b> Digital Surrogates: </b > $hathi_message $ia_message <br />" ;
-        }
-
-        echo "</div>";
-
 
     } // end foreach OCLC Number
 

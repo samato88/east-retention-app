@@ -13,7 +13,7 @@ function getLibNames($nbr, $db) {
             $name = '<div class="tooltip"><a href="' . $url . '">' . $name . "</a>";
             if ($holdings != "") { // if holdings available
                 $name = $name .
-                    "<span class='tooltiptext' >" . $id . $holdings . "</span>";
+                    "<span class='tooltiptext' >" . $holdings . "</span>";
             }
             $name = $name . "</div>" ;
         } # end if library url

@@ -7,10 +7,14 @@
     <div>
         <span class="easttext">SEARCH:</span>
         <select name="searchField" id="searchField">
+            <option value="titlesearch" selected="selected">Title Phrase Search</option>
             <option value="worldcat_oclc_nbr">OCLC Number</option>
-            <option value="titlesearch">Title Phrase Search</option>
+            <option value="isbn">ISBN*</option>
+            <option value="issn">ISSN</option>
+
         </select>
         <input type="text"  size="40" name="query" id="query" value=""/>
+
     </div>
     <!--
     EAST Aggregated Circulation
@@ -49,6 +53,7 @@
         <option value="F">Not in HathiTrust
         </option>
     </select>
+    <br />Limit to Serials/Journals: <input type="checkbox" name="rectype" value="s">
 
 
     <br />
@@ -61,92 +66,93 @@
     <table>
         <tr>
             <td><input type="checkbox" name="any"  id="any" value="any">Any (default)</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4915">Elms College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="13942">New York University</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4936">UMass Dartmouth</input></td>
+            <td><input type="checkbox" name="libraries[]" value="13937" />DeSales University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4922" />Mount Holyoke</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4935" />UMass Boston</input></td>
         </tr>
         <tr>
             <td><input type="checkbox" name="libraries[]" value="1">Adelphi University</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4916">Fairfield University</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4923">Phillips Exeter Academy</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4937">UMass Lowell</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4915" />Elms College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="13942" />New York University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4936" />UMass Dartmouth</input></td>
         </tr>
         <tr>
             <td><input type="checkbox" name="libraries[]" value="4907">Amherst College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="5033">Five Colleges, Inc.</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4939">Rochester</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4938">University of N.H.</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4916" />Fairfield University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4923" />Phillips Exeter Academy</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4937" />UMass Lowell</input></td>
         </tr>
         <tr>
             <td><input type="checkbox" name="libraries[]" value="3">Bard College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="13938">Florida State University</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4924">Saint Anselm College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="28">Union College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="5033" />Five Colleges, Inc.</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4939" />Rochester</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4938" />University of N.H.</input></td>
         </tr>
         <tr>
             <td><input type="checkbox" name="libraries[]" value="4908">Boston College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="13939">Furman University</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4925">Siena College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="13946">Union College (cohort 2)</input></td>
+            <td><input type="checkbox" name="libraries[]" value="13938" />Florida State University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4924" />Saint Anselm College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="28" />Union College</input></td>
         </tr>
         <tr>
             <td><input type="checkbox" name="libraries[]" value="4909">Boston University</input></td>
-            <td><input type="checkbox" name="libraries[]" value="13940">Gettysburg College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4944">Skidmore College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="9007">UMass Medical School</input></td>
+            <td><input type="checkbox" name="libraries[]" value="13939" />Furman University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4925" />Siena College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="13946" />Union College (cohort 2)</input></td>
         </tr>
         <tr>
             <td><input type="checkbox" name="libraries[]" value="4910">Brandeis University</input></td>
-            <td><input type="checkbox" name="libraries[]" value="13">Hamilton College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4926">Smith College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="13945">University of Pittsburgh</input></td>
+            <td><input type="checkbox" name="libraries[]" value="13940" />Gettysburg College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4944" />Skidmore College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="9007" />UMass Medical School</input></td>
         </tr>
         <tr>
             <td><input type="checkbox" name="libraries[]" value="4911">Bridgewater State</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4917">Hampshire College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4927">Swarthmore College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="13944">University of the South</input></td>
+            <td><input type="checkbox" name="libraries[]" value="13" />Hamilton College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4926" />Smith College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="13945" />University of Pittsburgh</input></td>
         </tr>
         <tr>
             <td><input type="checkbox" name="libraries[]" value="4912">Bryn Mawr College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="13941">Hofstra University</input></td>
-            <td><input type="checkbox" name="libraries[]" value="13943">Syracuse University</input></td>
-            <td><input type="checkbox" name="libraries[]" value="36">Vassar College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4917" />Hampshire College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4927" />Swarthmore College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="13944" />University of the South</input></td>
         </tr>
         <tr>
             <td><input type="checkbox" name="libraries[]" value="13935">Bucknell University</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4920">Lafayette College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4928">Trinity College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4940">Wellesley College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="13941" />Hofstra University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="13943" />Syracuse University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="36" />Vassar College</input></td>
         </tr>
         <tr>
-            <td><input type="checkbox" name="libraries[]" value="4913">Colby</input></td>
-            <td><input type="checkbox" name="libraries[]" value="5743">Loyola Notre Dame</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4929">Tufts University</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4941">Wesleyan University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="9009" />Coast Guard Academy</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4920" />Lafayette College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4928" />Trinity College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4940" />Wellesley College</input></td>
         </tr>
         <tr>
-            <td><input type="checkbox" name="libraries[]" value="4914">Connecticut College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="900">MBL/WHOI</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4930">UConn</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4942">Williams College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4913" />Colby College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="5743" />Loyola Notre Dame</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4929" />Tufts University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4941" />Wesleyan University</input></td>
         </tr>
         <tr>
-            <td><input type="checkbox" name="libraries[]" value="13936">Davidson College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4921">Middlebury College</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4934">UMass Amherst</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4943">Yeshiva University</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4914"/>Connecticut College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="900"/>MBL/WHOI</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4930"/>UConn</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4942"/>Williams College</input></td>
         </tr>
         <tr>
-            <td><input type="checkbox" name="libraries[]" value="13937">DeSales University</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4922">Mount Holyoke</input></td>
-            <td><input type="checkbox" name="libraries[]" value="4935">UMass Boston</input></td>
-            <td></td>
+            <td><input type="checkbox" name="libraries[]" value="13936" />Davidson College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4921" />Middlebury College</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4934" />UMass Amherst</input></td>
+            <td><input type="checkbox" name="libraries[]" value="4943" />Yeshiva University</input></td>
         </tr>
     </table>
 
-
 </form>
+<hr />
+<p>*~12,000 monograph entries lack an ISBN</p>
 <?php include './includes/footer.html';?>
 
 <script type="text/javascript">

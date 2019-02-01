@@ -30,6 +30,9 @@ handlers:
 - url: /testing/
   script: /testing/index.html
 
+- url: /testing/stats
+  script: /testing/stats.html
+
 - url: /testing/about
   script: /testing/about.html
 

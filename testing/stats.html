@@ -1,10 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+<?php include '../includes/header.html';?>
+
+<h2>Stats</h2>
+<p>Internet Archive Holdings Overlap:</p>
+<pre>SELECT count(worldcat_oclc_nbr) FROM bib_info WHERE internetarchive = 'y'
+</pre>
+
+<p>In Internet Archive Title Overlap:</p>
+<pre>SELECT count(distinct(worldcat_oclc_nbr)) FROM bib_info WHERE internetarchive = 'y'
+</pre>
+
+<p>In Hathi:</p>
+<pre>SELECT count(worldcat_oclc_nbr) FROM bib_info WHERE in_hathi = 'T'
+</pre>
+<p>In Hathi PD:</p>
+<pre>SELECT count(worldcat_oclc_nbr) FROM bib_info WHERE hathi_pd = 'T'
+</pre>
+
+<p>In Hathi & IA:</p>
+<pre>SELECT count(worldcat_oclc_nbr) FROM bib_info WHERE in_hathi = 'T' AND internetarchive = 'y'
+</pre>
+<p>Totals per Library</p>
+group by (and get names rather than id)
+
+
+<p>Last Updated:  Jan 2019</p>
+<?php include 'includes/footer.html';?>
