@@ -41,9 +41,12 @@ handlers:
 
 - url: /testing/resultsblock
   script: /testing/resultsblock.php
-
+  
 - url: /testing/resultsblockN
   script: /testing/resultsblockN.php
+
+- url: /testing/oclcHoldings
+  script: /testing/getOCLCHoldings.php
 
 ######  TESTING CRUD
 - url: /testing/edit

@@ -47,7 +47,9 @@ if ($_GET["rectype"]) { // right now only using to limit to serials
 
 $displaylimit = 25;
 $limit = 25 ;
-$fields = "bib_info.worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, hathi_url, titlesearch, isbn, library_id, issn, rectype, internetarchive, internetarchive_url, COUNT(*) as cnt";
+$fields = "worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, hathi_url, titlesearch, isbn, library_id, issn, rectype, internetarchive, internetarchive_url";
+$fieldsy = "x.cnt, y.worldcat_oclc_nbr, y.title, y.east_retentions, y.in_hathi, y.hathi_ic, y.hathi_pd, y.hathi_url, y.titlesearch, y.isbn, y.library_id, y.issn, y.rectype, y.internetarchive, y.internetarchive_url";
+$fieldsx = "x.cnt, x.worldcat_oclc_nbr, x.title, x.east_retentions, x.in_hathi, x.hathi_ic, x.hathi_pd, x.hathi_url, x.titlesearch, x.isbn, x.library_id, x.issn, x.rectype, x.internetarchive, x.internetarchive_url";
 
 if( isset($_GET{'page'} ) ) {
     $page = test_input($_GET{'page'}, "page");
@@ -63,13 +65,13 @@ $limitlibrariesnamesstring = "" ;
 $limitrectypes = array() ;
 
 
-if(!empty($_GET['libraries'])){ // Loop to store  values of individual checked checkbox.
+if(!empty($_GET['libraries'])){ // Loop to store values of individual checked checkbox.
     foreach($_GET['libraries'] as $selected){
         $valselected = test_input($selected, "libraries") ;
-        array_push($limitlibraries,  "sub.library_id = " . $valselected) ;
+        array_push($limitlibraries,  "library_id = " . $valselected) ;
         array_push($limitlibrariesnames, getLibLimitName($valselected, $db) );
     } // end foreach library
-    $limitlibrary = " AND ( " . implode(' OR ',$limitlibraries) . ")" ;
+    $limitlibrary = " AND ( " . implode(' OR ',$limitlibraries) . ")" ;// (library_id=1 OR library_id=3)
     $limitlibrariesnamesstring = "  <b>Retained at</b>: " . implode(" or ", $limitlibrariesnames) ;
 } // end if library limits
 
@@ -78,17 +80,20 @@ if ($field === "titlesearch")  { // need 3 variants: w/o stopwords, w/o punctuat
     $titlelike  = remove_punctuation($query) ;
     $boolstring = remove_stopwords($titlelike,$boolstring);
     if (strlen($boolstring) === 2) { // +ww - two letter word - search it
-        $sql = "SELECT " . $fields . " FROM bib_info  WHERE  title LIKE '" . $titlelike . " %'";
+        #$sql = "SELECT " . $fields . " FROM bib_info  WHERE  title LIKE '" . $titlelike . " %'";
+        $where = "title LIKE '" . $titlelike . " %'";
     } else  {
-        // dist:  this longer version - don't think it needs to have both 'match' fields
-        //$sql = "SELECT " . $fields . ", MATCH (" . $field . ") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND titlesearch LIKE '" . $titlelike . "%'  FROM bib_info  WHERE MATCH ( " . $field . ") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND titlesearch LIKE '" . $titlelike . "%'";
-        $sql = "SELECT " . $fields . " FROM bib_info  WHERE MATCH ( " . $field . ") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND titlesearch LIKE '" . $titlelike . "%'";
-
+        $where =  "MATCH ( " . $field . ") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND titlesearch LIKE '" . $titlelike . "%'";
     }
+    $sql = "SELECT " . $fieldsx . " FROM ((SELECT ". $fields . ", count(worldcat_oclc_nbr) as cnt FROM bib_info WHERE " . $where . " GROUP BY worldcat_oclc_nbr ) as x), ((SELECT " . $fields . " FROM bib_info WHERE " . $where ;
+
 } else if ($field === "isbn") {
-    $sql = "SELECT " . $fields . " FROM bib_info  WHERE isbn = '" . $query . "'" ;
+    $sql = "SELECT " . $fieldsy . " FROM ((SELECT count(worldcat_oclc_nbr) as cnt FROM bib_info WHERE isbn='" . $query . "' GROUP BY worldcat_oclc_nbr ) as x),((SELECT " . $fields . " FROM bib_info WHERE isbn = '" . $query . "'";
+
 } else if ($field === "issn") {
-    $sql = "SELECT " . $fields . " FROM bib_info  WHERE issn = '" . $query . "'";
+    //$sql = "SELECT " . $fields . " FROM bib_info  WHERE issn = '" . $query . "'";
+    $sql = "SELECT " . $fieldsy . " FROM ((SELECT count(worldcat_oclc_nbr) as cnt FROM bib_info WHERE issn='" . $query . "' GROUP BY worldcat_oclc_nbr ) as x),((SELECT " . $fields . " FROM bib_info WHERE issn = '" . $query . "'";
+
 } else  { //($field === "worldcat_oclc_nbr") -DEFAULT SEARCH TYPE
   // check here if OCLC also in is table of oclcs updated by SCS
     $sqltestn = "SELECT inst_id, worldcat_oclc_nbr FROM local_worldcat_oclc_nbr WHERE local_oclc_nbr =".$query ;
@@ -104,7 +109,8 @@ if ($field === "titlesearch")  { // need 3 variants: w/o stopwords, w/o punctuat
         } // end foreach alt oclc number result
     } // end if results from query on alt oclc number table, used later??
 
-    $sql = "SELECT " . $fields . " FROM bib_info  WHERE bib_info.worldcat_oclc_nbr = ". $query ;
+    $sql = "SELECT " . $fieldsy . " FROM ((SELECT count(worldcat_oclc_nbr) as cnt FROM bib_info WHERE worldcat_oclc_nbr=" . $query . " GROUP BY worldcat_oclc_nbr ) as x),((SELECT " . $fields . " FROM bib_info WHERE worldcat_oclc_nbr = " . $query ;
+
 } // end field type
 
 if (isset($in_hathi)) {
@@ -131,7 +137,7 @@ if (isset($in_hathi)) {
     $sql_limits = $sql_limits . $hsql ;
 }
 
-if (isset($in_ia)) { //SEA working here
+if (isset($in_ia)) {
    switch ($in_ia) {
        case "T":
            $hsql = " AND internetarchive = 'y'" ;
@@ -148,17 +154,16 @@ if (isset($in_ia)) { //SEA working here
 }
 
 
-
 if (isset($rectype)){
     array_push($appliedLimits, "Serials/Journals" ) ;
     $sql_limits = $sql_limits . " AND rectype ='s'" ;
 }
+if (isset($limitlibrary)){
+    //array_push($appliedLimits, "Serials/Journals" ) ;
+    $sql_limits = $sql_limits . $limitlibrary ;
+}
 
-$sql_limits = $sql_limits .  " GROUP BY worldcat_oclc_nbr ORDER BY titlesearch" ;
-
-$countQuery = $sql . $sql_limits;
-
-$subquery_start = " SELECT sub.* FROM ( " ;
+$sql_limits = $sql_limits .  " ) as y) " ;
 
 if ($retentions != 'any') { // limit by number of retentions using subquery
     switch ($retentionsOperator) {
@@ -174,19 +179,26 @@ if ($retentions != 'any') { // limit by number of retentions using subquery
         default:
             $retentionsOperator = "=" ; // default should never be used unless someone messed w/ url
     } // end switch
-    $subquery_end = " ) sub WHERE sub.cnt  $retentionsOperator $retentions" ;
+    $sql_limits = $sql_limits  . " WHERE x.cnt " . $retentionsOperator . $retentions ;
 } // end if retentions not any
-else {
-    $subquery_end = " ) sub WHERE sub.cnt  > 0" ;
+
+if ($field === "titlesearch") {
+    if ($retentions === 'any') {
+        $sql_limits = $sql_limits . " WHERE x.worldcat_oclc_nbr = y.worldcat_oclc_nbr";
+    } else {
+        $sql_limits = $sql_limits . " AND x.worldcat_oclc_nbr = y.worldcat_oclc_nbr";
+    }
 }
-
-if (isset($limitlibrary)) {
-   $subquery_end = $subquery_end . $limitlibrary ;
+if ($field === "worldcat_oclc_nbr" or $field === "isbn" or $field === "issn") {
+    $sql_limits = $sql_limits .  " GROUP BY worldcat_oclc_nbr " ;
 }
+$sql_search = $sql . $sql_limits;
 
-$countQuery = $subquery_start . $countQuery . $subquery_end ;
-$sql_search = $subquery_start . $sql .  $sql_limits . $subquery_end . " LIMIT " . $offset . "," . $limit ;
+//echo "sql_limits : *" . $sql_limits . "*<br/>";
+//echo "sql_search : " . $sql_search . "<br/>";
 
+$countQuery = $sql_search ;
+$sql_search = $sql_search . " LIMIT " . $offset . "," . $limit ;
 
 extract(runQuery($countQuery, $db),   EXTR_PREFIX_ALL, "count"); //$count_Results  $count_rowCount
 extract(runQuery($sql_search, $db), EXTR_PREFIX_ALL, "result");//$result_Results $result_rowCount
@@ -195,7 +207,7 @@ extract(runQuery($sql_search, $db), EXTR_PREFIX_ALL, "result");//$result_Results
 $to = $limit * $page  ;
 list ($pagination, $newsearch, $end) = paging($page, $to, $count_rowCount, $testing) ;
 
-if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "1st SQL:<br/> " . $sql_search . " <br/>Count SQL:<br/>" . $countQuery ;}
+if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "Search SQL:<br/> " . $sql_search . " <br/>Count SQL:<br/>" . $countQuery ;}
 
 if ($count_rowCount == 0 ) { //no search results in bib_info
 
@@ -221,12 +233,10 @@ if ($count_rowCount == 0 ) { //no search results in bib_info
     extract(getMessage($alt_oclc, $db), EXTR_PREFIX_ALL, "message"); //$message_text , $message_mappedOCLC
 
     showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc );
-    //showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, "TESTING", $alt_oclc );
 
     showResults($result_Results, $newsearch, $pagination, $end, $db);
     echo $message_text;
 } // end else not zero results
-
 
 $db = null ;
 
@@ -242,11 +252,11 @@ function showResults ($entries, $newsearch, $pagination, $end, $db) {
         $OCLC = $row['worldcat_oclc_nbr'] ;
         $hathi = $row['in_hathi'];
         $hathi_pd = $row['hathi_pd'];
-        $hathi_ic = $row['hathi_ic'];
+        //$hathi_ic = $row['hathi_ic']; // not used
         $hathi_url = $row['hathi_url'];
         $ia = $row['internetarchive'];
         $ia_url = $row['internetarchive_url'];
-        $isbn = $row['isbn'];
+        $isbn = $row['isbn'];  // currently not used, should add it in
 
 
         if ($hathi === 'T') {
@@ -273,6 +283,9 @@ function showResults ($entries, $newsearch, $pagination, $end, $db) {
              <b>OCLC Number: </b><a href="http://www.worldcat.org/oclc/{$OCLC}">$OCLC</a><br />
              <b>TITLE:</b> {$row['title']} <br />
 EOT1;
+        if ($row['isbn']) {
+            echo "<b>ISBN: </b><a href=\"https://www.worldcat.org/isbn/" . $row['isbn'] . "\">" . $row['isbn'] . "</a><br />" ;
+        }
         if ($row['issn']) {
             echo "<b>ISSN: </b><a href=\"https://www.worldcat.org/issn/" . $row['issn'] . "\">" . $row['issn'] . "</a><br />" ;
         }
@@ -283,10 +296,7 @@ EOT2;
         if ($hathi_message != '' || $ia_message != '') {
             echo "<br /><b> Digital Surrogates: </b > $hathi_message $ia_message <br />" ;
         }
-
         echo "</div>";
-
-
     } // end foreach OCLC Number
 
     echo $newsearch ;
