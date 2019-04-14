@@ -22,7 +22,7 @@
     // test_input !!
 
     $fields = "worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, hathi_url, titlesearch";
-    $sql = "SELECT " . $fields . " FROM bib_info  WHERE worldcat_oclc_nbr = ". $oclc . AND "library_id = ". $libraryid ;
+    $sql = "SELECT " . $fields . " FROM bib_info  WHERE worldcat_oclc_nbr = ". $oclc . "AND library_id = ". $libraryid ;
 
    // select title, library_id from bib_info where bib_info.worldcat_oclc_nbr = "34731450" and library_id = "1"
 
@@ -45,9 +45,6 @@
 
 
     $newsearch = "<button><a href='" . $testing . "/'>New Search</a></button>";
-
-    ////////////////////////////////////////////
-
 
 
     if ($count == 0 ) {
@@ -135,11 +132,6 @@ EOT;
     } // end getLibLimitName
 
 
-
-
-
-
-     }
     ?>
 
 

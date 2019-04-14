@@ -36,10 +36,6 @@ if ($_GET["in_hathi"]) {
     $in_hathi = test_input($_GET["in_hathi"], "in_hathi");
 }
 
-if ($_GET["in_ia"]) {
-    $in_ia = test_input($_GET["in_ia"], "in_ia");
-}
-
 if ($_GET["rectype"]) { // right now only using to limit to serials
     $rectype = 's';
     //$rectype = test_input($_GET["rectype", "rectype");
@@ -47,7 +43,7 @@ if ($_GET["rectype"]) { // right now only using to limit to serials
 
 $displaylimit = 25;
 $limit = 25 ;
-$fields = "worldcat_oclc_nbr, any_value(title), any_value(in_hathi), any_value(hathi_ic), any_value(hathi_pd), any_value(hathi_url), any_value(titlesearch), any_value(isbn), any_value(issn), any_value(rectype), any_value(internetarchive), any_value(internetarchive_url),  count(worldcat_oclc_nbr) as cnt ";
+$fields = "bib_info.worldcat_oclc_nbr, title, east_retentions, in_hathi, hathi_ic, hathi_pd, hathi_url, titlesearch, isbn, library_id, issn, rectype, COUNT(*) as cnt";
 
 if( isset($_GET{'page'} ) ) {
     $page = test_input($_GET{'page'}, "page");
@@ -63,13 +59,13 @@ $limitlibrariesnamesstring = "" ;
 $limitrectypes = array() ;
 
 
-if(!empty($_GET['libraries'])){ // Loop to store values of individual checked checkbox.
+if(!empty($_GET['libraries'])){ // Loop to store  values of individual checked checkbox.
     foreach($_GET['libraries'] as $selected){
         $valselected = test_input($selected, "libraries") ;
-        array_push($limitlibraries,  "library_id = " . $valselected) ;
+        array_push($limitlibraries,  "sub.library_id = " . $valselected) ;
         array_push($limitlibrariesnames, getLibLimitName($valselected, $db) );
     } // end foreach library
-    $limitlibrary = " AND ( " . implode(' OR ',$limitlibraries) . ")" ;// (library_id=1 OR library_id=3)
+    $limitlibrary = " AND ( " . implode(' OR ',$limitlibraries) . ")" ;
     $limitlibrariesnamesstring = "  <b>Retained at</b>: " . implode(" or ", $limitlibrariesnames) ;
 } // end if library limits
 
@@ -78,20 +74,17 @@ if ($field === "titlesearch")  { // need 3 variants: w/o stopwords, w/o punctuat
     $titlelike  = remove_punctuation($query) ;
     $boolstring = remove_stopwords($titlelike,$boolstring);
     if (strlen($boolstring) === 2) { // +ww - two letter word - search it
-        #$sql = "SELECT " . $fields . " FROM bib_info  WHERE  title LIKE '" . $titlelike . " %'";
-        $where = "title LIKE '" . $titlelike . " %'";
+        $sql = "SELECT " . $fields . " FROM bib_info  WHERE  title LIKE '" . $titlelike . " %'";
     } else  {
-        $where =  "MATCH ( " . $field . ") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND titlesearch LIKE '" . $titlelike . "%'";
+        // dist:  this longer version - don't think it needs to have both 'match' fields
+        //$sql = "SELECT " . $fields . ", MATCH (" . $field . ") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND titlesearch LIKE '" . $titlelike . "%'  FROM bib_info  WHERE MATCH ( " . $field . ") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND titlesearch LIKE '" . $titlelike . "%'";
+        $sql = "SELECT " . $fields . " FROM bib_info  WHERE MATCH ( " . $field . ") AGAINST ('" . $boolstring . "' IN BOOLEAN MODE) AND titlesearch LIKE '" . $titlelike . "%'";
+
     }
-    $sql = "SELECT " . $fields . " FROM bib_info WHERE " . $where ;
-    $sql_count = "SELECT " . $fieldscnt . " FROM bib_info WHERE " . $where ;
-
 } else if ($field === "isbn") {
-    $sql = "SELECT " . $fields . " FROM bib_info  WHERE isbn = '" . $query . "'";
-
+    $sql = "SELECT " . $fields . " FROM bib_info  WHERE isbn = '" . $query . "'" ;
 } else if ($field === "issn") {
     $sql = "SELECT " . $fields . " FROM bib_info  WHERE issn = '" . $query . "'";
-
 } else  { //($field === "worldcat_oclc_nbr") -DEFAULT SEARCH TYPE
   // check here if OCLC also in is table of oclcs updated by SCS
     $sqltestn = "SELECT inst_id, worldcat_oclc_nbr FROM local_worldcat_oclc_nbr WHERE local_oclc_nbr =".$query ;
@@ -107,8 +100,7 @@ if ($field === "titlesearch")  { // need 3 variants: w/o stopwords, w/o punctuat
         } // end foreach alt oclc number result
     } // end if results from query on alt oclc number table, used later??
 
-    $sql = "SELECT " . $fields . " FROM bib_info WHERE worldcat_oclc_nbr=" . $query  ;
-
+    $sql = "SELECT " . $fields . " FROM bib_info  WHERE bib_info.worldcat_oclc_nbr = ". $query ;
 } // end field type
 
 if (isset($in_hathi)) {
@@ -135,39 +127,16 @@ if (isset($in_hathi)) {
     $sql_limits = $sql_limits . $hsql ;
 }
 
-if (isset($in_ia)) {
-   switch ($in_ia) {
-       case "T":
-           $hsql = " AND internetarchive = 'y'" ;
-           $h = " in Internet Archives";
-           break ;
-       case "F":
-           $hsql = " AND (internetarchive = 'n' OR internetarchive is null)" ;
-           $h = " not in Internet Archives";
-           break ;
-    }
-
-    array_push($appliedLimits,  $h) ;
-    $sql_limits = $sql_limits . $hsql ;
-}
-
-
 if (isset($rectype)){
     array_push($appliedLimits, "Serials/Journals" ) ;
     $sql_limits = $sql_limits . " AND rectype ='s'" ;
 }
 
-//SEA taking this out 4/14/19 until EAST retentions field updated
-//was never working right with group by OCLC anyway
-/*
-if (isset($limitlibrary)){
-    //array_push($appliedLimits, "Serials/Journals" ) ;
-    $sql_limits = $sql_limits . $limitlibrary ;
-}
-*/
+$sql_limits = $sql_limits .  " GROUP BY worldcat_oclc_nbr ORDER BY titlesearch" ;
 
-$sql_limits = $sql_limits .  " GROUP BY worldcat_oclc_nbr " ;
+$countQuery = $sql . $sql_limits;
 
+$subquery_start = " SELECT sub.* FROM ( " ;
 
 if ($retentions != 'any') { // limit by number of retentions using subquery
     switch ($retentionsOperator) {
@@ -183,17 +152,19 @@ if ($retentions != 'any') { // limit by number of retentions using subquery
         default:
             $retentionsOperator = "=" ; // default should never be used unless someone messed w/ url
     } // end switch
-    $sql_limits = $sql_limits  . " HAVING cnt " . $retentionsOperator . $retentions ;
+    $subquery_end = " ) sub WHERE sub.cnt  $retentionsOperator $retentions" ;
 } // end if retentions not any
+else {
+    $subquery_end = " ) sub WHERE sub.cnt  > 0" ;
+}
 
-$sql_limits = $sql_limits . " ORDER BY any_value(titlesearch) " ;
-$sql_search = $sql . $sql_limits;
+if (isset($limitlibrary)) {
+   $subquery_end = $subquery_end . $limitlibrary ;
+}
 
-//echo "sql_limits : *" . $sql_limits . "*<br/>";
-//echo "sql_search : " . $sql_search . "<br/>";
+$countQuery = $subquery_start . $countQuery . $subquery_end ;
+$sql_search = $subquery_start . $sql .  $sql_limits . $subquery_end . " LIMIT " . $offset . "," . $limit ;
 
-$countQuery = $sql_search ;
-$sql_search = $sql_search . " LIMIT " . $offset . "," . $limit ;
 
 extract(runQuery($countQuery, $db),   EXTR_PREFIX_ALL, "count"); //$count_Results  $count_rowCount
 extract(runQuery($sql_search, $db), EXTR_PREFIX_ALL, "result");//$result_Results $result_rowCount
@@ -202,7 +173,7 @@ extract(runQuery($sql_search, $db), EXTR_PREFIX_ALL, "result");//$result_Results
 $to = $limit * $page  ;
 list ($pagination, $newsearch, $end) = paging($page, $to, $count_rowCount, $testing) ;
 
-if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "Search SQL:<br/> " . $sql_search . " <br/>Count SQL:<br/>" . $countQuery ;}
+if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "1st SQL:<br/> " . $sql_search . " <br/>Count SQL:<br/>" . $countQuery ;}
 
 if ($count_rowCount == 0 ) { //no search results in bib_info
 
@@ -228,10 +199,12 @@ if ($count_rowCount == 0 ) { //no search results in bib_info
     extract(getMessage($alt_oclc, $db), EXTR_PREFIX_ALL, "message"); //$message_text , $message_mappedOCLC
 
     showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc );
+    //showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, "TESTING", $alt_oclc );
 
     showResults($result_Results, $newsearch, $pagination, $end, $db);
     echo $message_text;
 } // end else not zero results
+
 
 $db = null ;
 
@@ -245,30 +218,35 @@ function showResults ($entries, $newsearch, $pagination, $end, $db) {
 
     foreach ($entries as $row) {
         $OCLC = $row['worldcat_oclc_nbr'] ;
-        $hathi = $row['any_value(in_hathi)'];
-        $hathi_pd = $row['any_value(hathi_pd)'];
-        //$hathi_ic = $row['hathi_ic']; // not used
-        $hathi_url = $row['any_value(hathi_url)'];
-        $ia = $row['any_value(internetarchive)'];
-        $ia_url = $row['any_value(internetarchive_url)'];
-        $isbn = $row['any_value(isbn)'];  // currently not used, should add it in
+        $hathi = $row['in_hathi'];
+        $hathi_pd = $row['hathi_pd'];
+        $hathi_ic = $row['hathi_ic'];
+        $hathi_url = $row['hathi_url'];
+        $isbn = $row['isbn'];
 
 
         if ($hathi === 'T') {
             if ($hathi_pd === 'T') {
-                $hathi_message = "Hathi Public Domain" ;
-            } else {// if ($hathi_ic === 'T') {
-                $hathi_message = "Hathi In Copyright" ;
+                $hathi = "Hathi Public Domain" ;
+            } else if ($hathi_ic === 'T') {
+                $hathi = "Hathi In Copyright" ;
+            } else {
+                $hathi = "In Hathi" ;
             }
-            $hathi_message = '<a href="' . $hathi_url . '">' . $hathi_message . '</a>' ;
+            $hathi = '<a href="' . $hathi_url . '">' . $hathi . '</a>' ;
         } else { // hathi not T
-            $hathi_message = '' ;
+            $hathi = "Not In Hathi" ;
         }
 
         if ($ia === 'y') {
-            $ia_message = '&nbsp;&nbsp;<a href="' . $ia_url . '">Internet Archive</a>' ;
-        }  else {
-            $ia_message = '' ;
+            if ($ia_pd === 'y') {
+                $ia_message = "IA Public Domain" ;
+            } else  {
+                $ia_message = "IA Restricted" ;
+            }
+            $ia_message = '<a href="' . $ia_url . '">' . $ia_message . '</a>' ;
+        } else { // ia not y
+            $ia_message = "Not In Internet Archive" ;
         }
 
         $libNames = getLibNames($OCLC, $db) ;
@@ -276,22 +254,18 @@ function showResults ($entries, $newsearch, $pagination, $end, $db) {
         echo <<<EOT1
         <div class="entry" style="border:solid 1px black; margin-top:3px; position: relative;">
              <b>OCLC Number: </b><a href="http://www.worldcat.org/oclc/{$OCLC}">$OCLC</a><br />
-             <b>TITLE:</b> {$row['any_value(title)']}<br />
+             <b>TITLE:</b> {$row['title']} <br />
 EOT1;
-        if ($row['isbn']) {
-            echo "<b>ISBN: </b><a href=\"https://www.worldcat.org/isbn/" . $row['isbn'] . "\">" . $row['isbn'] . "</a><br />" ;
-        }
         if ($row['issn']) {
             echo "<b>ISSN: </b><a href=\"https://www.worldcat.org/issn/" . $row['issn'] . "\">" . $row['issn'] . "</a><br />" ;
         }
         echo <<<EOT2
              <b>EAST Retentions: </b> {$row['cnt']} <br />
+             <b>Hathi: </b> $hathi &nbsp;&nbsp;<b>Internet Archive: </b>$ia_message <br />
              <b>Retained by: </b> $libNames
+        </div>
 EOT2;
-        if ($hathi_message != '' || $ia_message != '') {
-            echo "<br /><b> Digital Surrogates: </b > $hathi_message $ia_message <br />" ;
-        }
-        echo "</div>";
+
     } // end foreach OCLC Number
 
     echo $newsearch ;
@@ -302,7 +276,7 @@ EOT2;
 <?php
 function showNoResults($query, $appliedLimits, $limitlibraries, $limitlibrariesnamesstring, $newsearch, $field) {
     // find and report any search and library name limits here
-    echo "<p><b>No results for $field :</b> '$query' </p>";
+    echo "<br/><b>No results for $field :</b> '$query'";
     listLimits($appliedLimits, $limitlibraries);
     if (isset($limitlibrariesnamesstring)) {
         echo $limitlibrariesnamesstring;
@@ -340,7 +314,7 @@ function showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$
         if ($count_rowCount < $limit) { $limit = $count_rowCount ;}
         if ($to > $count_rowCount) { $to = $count_rowCount ; }
         echo '<h3>Showing ' ;
-        echo  $offset + 1 . " to $to  of $count_rowCount results</h3>" ;
+        echo  $offset + 1 . " to $to  of $count_rowCount results, sorted by relevance</h3>" ;
         echo'<p><b>You searched title</b> : ' . $query ;
 
     } elseif ($field === 'isbn') {
@@ -362,10 +336,8 @@ function runQuery ($sql, &$db){
     //   try/catch doesn't solve hanging mysql gone away error
     try {
         $Query = $db->query($sql);
-        if ($Query) {
-            $Count = $Query->rowCount();
-            $Results = $Query->fetchAll();
-        }
+        $Count = $Query->rowCount();
+        $Results = $Query->fetchAll();
 
     } catch (PDOException $e) {
         print "Error!: " . $e->getMessage() . "<br/>";
