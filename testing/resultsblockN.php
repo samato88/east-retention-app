@@ -98,11 +98,11 @@ if ($field === "titlesearch")  { // need 3 variants: w/o stopwords, w/o punctuat
     extract(runQuery($sqltestn, $db), EXTR_PREFIX_ALL, "alt"); // creates alt_Results
 
     if ($alt_Results !== false && $alt_rowCount !== false) {
-        $alt_lib_ids = array(); // does this ever get used?
+        //$alt_lib_ids = array(); // does this ever get used?
         foreach ($alt_Results as $row) {
             $nOCLC = $row['worldcat_oclc_nbr'];
             $nLib = $row['inst_id'];
-            $alt_lib[$nLib] = $nOCLC ;
+            $alt_lib[$nLib] = $nOCLC ; // key library value mapped oclc
             $alt_oclc[$nOCLC][] = $nLib; // array of libs for each distinct OCLC, does this work if more than one?
         } // end foreach alt oclc number result
     } // end if results from query on alt oclc number table, used later??
@@ -207,13 +207,13 @@ if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "
 if ($count_rowCount == 0 ) { //no search results in bib_info
 
     if ( count($alt_lib) > 0) { // if there was an alt oclc number search
-        extract(getMessage($alt_oclc, $db), EXTR_PREFIX_ALL, "message"); //$message_text , $message_mappedOCLC
+        extract(getMessage($alt_oclc, $db, $query), EXTR_PREFIX_ALL, "message"); //$message_text , $message_mappedOCLC
 
         $newSQL = "SELECT " . $fields . " FROM bib_info  WHERE bib_info.worldcat_oclc_nbr = ". $message_mappedOCLC ;
         $newSQL = $subquery_start . $newSQL .  $sql_limits . $subquery_end ;
         extract(runQuery($newSQL, $db), EXTR_PREFIX_ALL, "mapped"); //$mapped_Results  $mapped_rowCount
         if ($mapped_rowCount > 0) {
-            showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc );
+            showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc, $message_mappedOCLC );
             showResults($mapped_Results, $newsearch, $pagination, $end, $db);
             echo $message_text;
         } else { // this shouldn't happen- if in alt table should be in bib table too
@@ -225,9 +225,9 @@ if ($count_rowCount == 0 ) { //no search results in bib_info
     }
 
 } else { // there are results
-    extract(getMessage($alt_oclc, $db), EXTR_PREFIX_ALL, "message"); //$message_text , $message_mappedOCLC
+    extract(getMessage($alt_oclc, $db, $query), EXTR_PREFIX_ALL, "message"); //$message_text , $message_mappedOCLC
 
-    showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc );
+    showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc, "" );
 
     showResults($result_Results, $newsearch, $pagination, $end, $db);
     echo $message_text;
@@ -302,6 +302,7 @@ EOT2;
 <?php
 function showNoResults($query, $appliedLimits, $limitlibraries, $limitlibrariesnamesstring, $newsearch, $field) {
     // find and report any search and library name limits here
+    if ($field == "worldcat_oclc_nbr") { $field = "OCLC Number" ;}
     echo "<p><b>No results for $field :</b> '$query' </p>";
     listLimits($appliedLimits, $limitlibraries);
     if (isset($limitlibrariesnamesstring)) {
@@ -311,11 +312,10 @@ function showNoResults($query, $appliedLimits, $limitlibraries, $limitlibrariesn
 }
 ?>
 <?php
-function getMessage($alt_oclc, $db) {
+function getMessage($alt_oclc, $db, $oclcquery) { // alt_oclc is key new oclc, value lib name
     $messages['text'] = "";
     $messages['mappedOCLC'] = "";
 
-    // SEA HERE - different messages if alt worldcat > 1 number
     if ( $alt_oclc ) {
         foreach ($alt_oclc as $key => $value) { // $mappedOCLC will be random if more than one, that's okay
             $librariesAlt = array();
@@ -323,8 +323,12 @@ function getMessage($alt_oclc, $db) {
             foreach ($value as $id) { // get library names that have this mapped oclc
                 $librariesAlt[] = getLibLimitName($id, $db);
             }
-            $searchlink = '<a href="/searchresults?searchField=worldcat_oclc_nbr&query=' . $key . '&east_retentions_operator=equals&east_retentions=any&in_hathi=">' . $key . '</a>';
-            $message = " <i><sup>*</sup>SCS mapped this OCLC number to " . $searchlink . " for " . join(", ", $librariesAlt) . ".</i><br/>";
+            $retsearchlink = '<a href="/searchresults?searchField=worldcat_oclc_nbr&query=' . $key . '&east_retentions_operator=equals&east_retentions=any&in_hathi=">EAST Retentions</a>';
+            $oclcsearchlink = '<a href="https://worldcat.org/oclc/' . $key . '">WorldCat</a>';
+            $searchlink = " ( " . $retsearchlink . " | " .  $oclcsearchlink. " )";
+            //$message = " <i><sup>*</sup>SCS mapped OCLC Number ". $oclcquery . " to " . $searchlink . " for " . join(", ", $librariesAlt) . ".</i><br/>";
+            $message = " <i><sup>*</sup>At " . join(", ", $librariesAlt) . " SCS mapped OCLC Number ". $oclcquery . " to " . $key . $searchlink . "</i><br/>";
+
             $messages['text'] = $messages['text'] . $message;
         } // end foreach atl_oclc
 
@@ -335,7 +339,7 @@ function getMessage($alt_oclc, $db) {
 } // end getMessage
 ?>
 <?php
-function showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc ){
+function showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc, $mapped ){
     if ($field === 'titlesearch') {
         if ($count_rowCount < $limit) { $limit = $count_rowCount ;}
         if ($to > $count_rowCount) { $to = $count_rowCount ; }
@@ -350,6 +354,7 @@ function showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$
     } else { // oclc search
         echo'<p><b>You searched OCLC number</b> : ' . $query  ;
     }
+    if ($mapped != "") {print " <b>, which returned no results.<br />Returning results for : </b>" . $mapped  ; }
     if (count($alt_oclc) > 0) { print "<sup>*</sup>" ; }
 
     listLimits($appliedLimits, $limitlibrariesnamesstring );
