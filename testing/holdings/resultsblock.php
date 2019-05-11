@@ -271,7 +271,7 @@ function showResults ($entries, $newsearch, $pagination, $end, $db) {
             $ia_message = '' ;
         }
 
-        $libNames = getLibNames($OCLC, $db, "htmlstyled") ;
+        $libNames = getLibNames($OCLC, $db) ;
 
         echo <<<EOT1
         <div class="entry" style="border:solid 1px black; margin-top:3px; position: relative;">

@@ -1,18 +1,13 @@
 <?php
-/*TO DO - make search page, param for frbr,
-east db api search and add here
-hathi api search - https://catalog.hathitrust.org/api/volumes/full/oclc/10538871.json
-internet archives api search
-**Double check on service level - does full get you more holdings?**
- * https://www.oclc.org/developer/develop/web-services/worldcat-search-api/service-levels.en.html
-*/
-include '../includes/connect.php'; // connects to appropriate database
-include '../includes/test_input.php';   // test_input function include 'includes/listLimits.php'; // list search limited by in results
-include '../includes/isTesting.php'; // is this the testing site
-include '../includes/paging.php';   // pagination
+
+include 'includes/connect.php'; // connects to appropriate database
+include 'includes/test_input.php';   // test_input function include 'includes/listLimits.php'; // list search limited by in results
+include 'includes/isTesting.php'; // is this the testing site
+include 'includes/paging.php';   // pagination
 
 $urlbase = "http://www.worldcat.org/webservices/catalog/content/libraries/";
-$q = urlencode(htmlentities($_GET['q'])); // 436577
+$q = urlencode(htmlentities($_GET['query'])); // 436577
+$t = urlencode(htmlentities($_GET['searchField']));
 
 if (ctype_digit($q) && (strlen($q) < 20)) { // it's all digits, and less than 20 chars, good to go
     $oclc = $query ;
@@ -38,6 +33,8 @@ $wskey = "&wskey=" . $wskey;
 $url = $urlbase . $q . $format . $symbol . $wskey;
 //echo $url ;
 $contents = file_get_contents($url);
+// NEED ERROR CHECKING HERE - what does file_get_contents return?
+
 //echo $contents ;
 //var_dump(json_decode($contents));
 
@@ -46,14 +43,19 @@ $json = json_decode($contents);
 $title = $json->{'title'};
 $resultOCLC = $json->{'OCLCnumber'};
 $eastCount =  $json->{'totalLibCount'};
-
 $libraries = $json->{'library'}; // libraries is an array
-echo "<b>You searched: </b><a href='https://www.worldcat.org/oclc/". $q . "'>" . $q . "</a> </b></br>";
-echo "<b>Current OCLC Number: </b><a href='https://www.worldcat.org/oclc/" . $resultOCLC. "'/>" . $resultOCLC . "</a><br />";
-echo "<hr/><p>Search results with FRBR On :</p>";
-echo "<b>$title</b>";
-echo "<br />EAST Holdings: $eastCount  <br />";
 
+$OCLCmessage = "<p>Current OCLC Number: <a href='https://www.worldcat.org/oclc/" . $resultOCLC. "'/>" . $resultOCLC . "</a><br />";
+$OCLCmessage = $OCLCmessage . "Search results with FRBR On :<br />";
+$OCLCmessage = $OCLCmessage .  "<b>$title</b>";
+$OCLCmessage = $OCLCmessage . "<br />EAST Holdings: $eastCount  <p />";
+
+/*
+echo "<p>Current OCLC Number: <a href='https://www.worldcat.org/oclc/" . $resultOCLC. "'/>" . $resultOCLC . "</a><br />";
+echo "Search results with FRBR On :<br />";
+echo "<b>$title</b>";
+echo "<br />EAST Holdings: $eastCount  <p />";
+*/
 foreach($libraries as $lib) {
     //var_dump($lib);
     $libName = $lib->{'institutionName'};
@@ -61,12 +63,17 @@ foreach($libraries as $lib) {
     $libsymbol = $lib->{'oclcSymbol'};
     $state = $lib->{'state'};
 
+    $OCLCmessage = $OCLCmessage . '<a href="$url">$libName</a> ($libsymbol)';
+/*
     echo <<<EOL
     <a href="$url">$libName</a> ($libsymbol)
+<hr />
 EOL;
+*/
 } // end foreach lib
-echo "<p>TODO:  FRBR , total worldcat?  all alt numbers?   Search retentions, search hathi and ia</p>" ;
 
+echo $OCLCmessage;
+echo "<hr/";
 //echo $json{'library'}{'institutionName'};
 
 

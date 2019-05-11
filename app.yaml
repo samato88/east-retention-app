@@ -45,8 +45,28 @@ handlers:
 - url: /testing/resultsblockN
   script: /testing/resultsblockN.php
 
-- url: /testing/oclcHoldings
-  script: /testing/getOCLCHoldings.php
+# TESTING HOLDINGS
+- url: /testing/oclc
+  script: /testing/holdings/holdings.html
+
+- url: /testing/holdings/searchresults
+  script: /testing/holdings/searchresults.html
+
+- url: /testing/holdings/getOCLCHoldings
+  script: /testing/holdings/getOCLCHoldings.php
+
+- url: /testing/holdings/getEASTHoldings
+  script: /testing/holdings/api.php
+
+# live holdings - using same as testing for now
+#- url: /oclc
+#  script: /testing/holdings/holdings.html
+
+#- url: /holdings/searchresults
+#  script: /testing/holdings/searchresults.html
+
+#- url: /holdings/getOCLCHoldings
+#  script: /testing/holdings/getOCLCHoldings.php
 
 ######  TESTING CRUD
 - url: /testing/edit
