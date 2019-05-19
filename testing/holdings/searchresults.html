@@ -1,38 +1,141 @@
 
-<?php include 'includes/header.html';?>
+<?php
+include 'includes/header.html';
+include 'includes/test_input.php';   // test_input function
 
-<div id="loading" class="centerRow">
-    <h2 class="easttext">Querying...</h2>
-    <img src="https://blc.org/sites/default/files/BLC_Uploads/images/loopingCircle.gif" alt="loading" />
+$query = test_input($_GET["query"], "query") ; // searchstring
+
+echo "<b>You searched: </b><a href='https://www.worldcat.org/oclc/". $query . "'>" . $query . "</a> </b></br>";
+?>
+<button><a href='/oclc'>New Search</a></button>
+
+<hr />
+<div id="WorldCat">
+    <b>EAST Members WorldCat Holdings:</b>
+    <div id="loadingWorldCat" class="centerRow">
+        <h3 class="easttext">Querying...</h3>
+        <img src="/images/loopingCircle.gif" alt="loading" height="30px" />
+    </div>
+    <blockquote>
+        <div id="resultsWorldCat"></div>
+    </blockquote>
+</div>
+<hr />
+
+<div id="Retentions">
+    <b>EAST Retentions:</b>
+    <div id="loadingRetentions" class="centerRow">
+        <h3 class="easttext">Querying...</h3>
+        <img src="/images/loopingCircle.gif" alt="loading" height="30px" />
+    </div>
+    <blockquote>
+        <div id="resultsRetentions"></div>
+    </blockquote>
+</div>
+<hr />
+
+<div id="HathiTrust">
+    <b>HathiTrust:</b>
+    <div id="loadingHathiTrust" class="centerRow">
+        <h3 class="easttext">Querying...</h3>
+        <img src="/images/loopingCircle.gif" alt="loading" height="30px" />
+    </div>
+    <blockquote>
+        <div id="resultsHathiTrust"></div>
+    </blockquote>
+</div>
+<hr />
+
+<div id="Internet Archives">
+    <b>Internet Archives:</b>
+    <div id="loadingInternetArchives" class="centerRow">
+        <h3 class="easttext">Querying...</h3>
+        <img src="/images/loopingCircle.gif" alt="loading" height="30px" />
+    </div>
+    <blockquote>
+        <div id="resultsInternetArchives"></div>
+    </blockquote>
 </div>
 
- <div id="results"></div>
 
 
 
 
 <script type="text/javascript">
 
-    $( "#loading" ).show();
+    $( "#loadingWorldcat" ).show();
+    $( "#loadingRetentions" ).show();
+
     var q = document.URL.split('?')[1];
     console.log(q);
+
     $.ajax({
-        url: '/testing/resultsblock?'+ q,
+        url: '/testing/holdings/getOCLCHoldings?'+ q,
         type: 'get',
          success: function(data) {
-            $("#loading").hide();
+            $("#loadingWorldCat").hide();
              //console.log(data) ;
-            $("#results").html(data);
+            $("#resultsWorldCat").html(data);
         },
         error: function(xhr, desc, err) {
-            $("#loading").hide();
-            $("#results").html("An error occurred - try again. <p> <button><a href='/'>New Search</a></button></p>");
+            $("#loadingWorldCat").hide();
+            $("#resultsWorldCat").html("An error occurred - try again." + err);
 
             console.log(xhr);
-            console.log("Details: " + desc + "\nError:" + err);
+            console.log("WorldCat API Details: " + desc + "\nError:" + err);
         }
     }); // end ajax call
 
+    $.ajax({
+        url: '/testing/holdings/getEASTHoldings?'+ q,
+        type: 'get',
+        success: function(data) {
+            $("#loadingRetentions").hide();
+            //console.log(data) ;
+            $("#resultsRetentions").html(data);
+        },
+        error: function(xhr, desc, err) {
+            $("#loadingRetentions").hide();
+            $("#resultsRetentions").html("An error occurred - try again. <p> <button><a href='/oclc'>New Search</a></button></p>");
+
+            console.log(xhr);
+            console.log("EAST RETENTIONS Details: " + desc + "\nError:" + err);
+        }
+    }); // end ajax call
+
+    $.ajax({
+        url: '/testing/holdings/getHathiHoldings?'+ q,
+        type: 'get',
+        success: function(data) {
+            $("#loadingHathiTrust").hide();
+            //console.log(data) ;
+            $("#resultsHathiTrust").html(data);
+        },
+        error: function(xhr, desc, err) {
+            $("#loadingHathiTrust").hide();
+            $("#resultsHathiTrust").html("An error occurred - try again." + err);
+
+            console.log(xhr);
+            console.log("HathiTrust Details: " + desc + "\nError:" + err);
+        }
+    }); // end ajax call
+
+    $.ajax({
+        url: '/testing/holdings/getIAHoldings?'+ q,
+        type: 'get',
+        success: function(data) {
+            $("#loadingInternetArchives").hide();
+            //console.log(data) ;
+            $("#resultsInternetArchives").html(data);
+        },
+        error: function(xhr, desc, err) {
+            $("#loadingInternetArchives").hide();
+            $("#resultsInternetArchives").html("An error occurred - try again. <p> <button><a href='/oclc'>New Search</a></button></p>");
+
+            console.log(xhr);
+            console.log("IA Details: " + desc + "\nError:" + err);
+        }
+    }); // end ajax call
 
 </script>
 <?php include 'includes/footer.html';?>

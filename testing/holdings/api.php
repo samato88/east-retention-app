@@ -1,164 +1,199 @@
+
 <?php
-/*TO DO
-Query EAST db ala the way it does for the web interface
-Return mapped oclc, holding libraries
-
-*/
-include '../includes/connect.php'; // connects to appropriate database
-include '../includes/test_input.php';   // test_input function include 'includes/listLimits.php'; // list search limited by in results
-include '../includes/isTesting.php'; // is this the testing site
-include '../includes/paging.php';   // pagination
-
-$urlbase = "http://www.worldcat.org/webservices/catalog/content/libraries/";
-$q = urlencode(htmlentities($_GET['q'])); // 436577
-
-if (ctype_digit($q) && (strlen($q) < 20)) { // it's all digits, and less than 20 chars, good to go
-    $oclc = $query ;
-    // NEED TO STRIP LEADING ZEROS?
-} else {
-    echo "OCLC number must be all digits, and less then 20 digits long" ;
-    exit(1);
-}
+//echo gethostname()  . '<br />';
+//echo 'query "' . htmlspecialchars($_GET["query"]) . '"<br />';
+//echo 'searchField  "' . htmlspecialchars($_GET["searchField"]) . '"<br />';
+include 'includes/connect.php'; // connects to appropriate database
+include 'includes/test_input.php';   // test_input function
+include 'includes/getLibNames.php'; // getLibNames, getLibLimitName functions
+include 'includes/isTesting.php'; // is this the testing site
 
 
-
-$url = $urlbase . $q ;
-//echo $url ;
-$contents = file_get_contents($url);
-//echo $contents ;
-//var_dump(json_decode($contents));
-
-$json = json_decode($contents);
-// {"title":"Dogs.","author":"Grabianski, Janusz.","publisher":"F. Watts","date":"1968.","OCLCnumber":"436577","totalLibCount":3,"library":
-$title = $json->{'title'};
-$resultOCLC = $json->{'OCLCnumber'};
-$eastCount =  $json->{'totalLibCount'};
-
-$libraries = $json->{'library'}; // libraries is an array
-echo "<b>You searched: </b><a href='https://www.worldcat.org/oclc/". $q . "'>" . $q . "</a> </b></br>";
-echo "<b>Current OCLC Number: </b><a href='https://www.worldcat.org/oclc/" . $resultOCLC. "'/>" . $resultOCLC . "</a><br />";
-echo "<hr/><p>Search results with FRBR On :</p>";
-echo "<b>$title</b>";
-echo "<br />EAST Holdings: $eastCount  <br />";
-
-foreach($libraries as $lib) {
-    //var_dump($lib);
-    $libName = $lib->{'institutionName'};
-    $url =  $lib->{'opacUrl'};
-    $libsymbol = $lib->{'oclcSymbol'};
-    $state = $lib->{'state'};
-
-    echo <<<EOL
-    <a href="$url">$libName</a> ($libsymbol)
-EOL;
-} // end foreach lib
-echo <<<EOL1
-<p>TODO:  </p>
-<ul>
-<li>FRBR</li>
-<li>total worldcat? </li> 
-<li>all alt numbers? </li>  
-<li>Search retentions</li>
-<li>search hathi </li>
-<li>search ia </li>
-</ul>
-EOL1;
-
-//echo $json{'library'}{'institutionName'};
+$query = test_input($_GET["query"], "query") ; // searchstring
+$field = test_input($_GET["searchField"], "searchfield") ; // worldcat_oclc_nbr, titlesearch, isbn, issn
 
 
-//echo $json;
+$fields = "worldcat_oclc_nbr, any_value(title),  any_value(isbn), any_value(issn), any_value(rectype),  count(worldcat_oclc_nbr) as cnt ";
 
-// URLS......
-//http://localhost:8080/testing/oclcHoldings?q=436577
-// http://localhost:8080/testing/oclc?q=1172085
-//$jurl = "http://www.worldcat.org/webservices/catalog/content/libraries/"
-// . $oclc .
-// "?oclcsymbol=BYNSP,BTSSP&wskey=" . $key .
-// "&servicelevel=full&format=json&callback=" . $callback ;
 
-//https://www.worldcat.org/webservices/catalog/content/libraries/436577?oclcsymbol=PIT&libtype&format=json&callback=function&wskey=$wskey
+if ($field === "isbn") {
+    $sql = "SELECT " . $fields . " FROM bib_info  WHERE isbn = '" . $query . "'";
 
-// this gets you 019s:
-// https://www.worldcat.org/webservices/catalog/content/1172085?format=json&callback=function&servicelevel=full&wskey=$wskey
+} else if ($field === "issn") {
+    $sql = "SELECT " . $fields . " FROM bib_info  WHERE issn = '" . $query . "'";
 
-/*upload file small example
+} else  { //($field === "worldcat_oclc_nbr") -DEFAULT SEARCH TYPE
+    // check here if OCLC also in is table of oclcs updated by SCS
+    $sqltestn = "SELECT inst_id, worldcat_oclc_nbr FROM local_worldcat_oclc_nbr WHERE local_oclc_nbr =".$query ;
+    extract(runQuery($sqltestn, $db), EXTR_PREFIX_ALL, "alt"); // creates alt_Results
 
-if ($_FILES['uploadedfile']['error'] == UPLOAD_ERR_OK               //checks for errors
-      && is_uploaded_file($_FILES['uploadedfile']['tmp_name'])) { //checks that file is uploaded
-  echo file_get_contents($_FILES['uploadedfile']['tmp_name']);
-}
- * /
- */
-/* upload file examples: https://www.php.net/manual/en/features.file-upload.php
-<?php
+    if ($alt_Results !== false && $alt_rowCount !== false) {
+        foreach ($alt_Results as $row) {
+            $nOCLC = $row['worldcat_oclc_nbr'];
+            $nLib = $row['inst_id'];
+            $alt_lib[$nLib] = $nOCLC ; // key library value mapped oclc
+            $alt_oclc[$nOCLC][] = $nLib; // array of libs for each distinct OCLC, does this work if more than one?
+        } // end foreach alt oclc number result
+    } // end if results from query on alt oclc number table, used later??
 
-header('Content-Type: text/plain; charset=utf-8');
+    $sql = "SELECT " . $fields . " FROM bib_info WHERE worldcat_oclc_nbr=" . $query  ;
 
-try {
+} // end field type
 
-    // Undefined | Multiple Files | $_FILES Corruption Attack
-    // If this request falls under any of them, treat it invalid.
-    if (
-        !isset($_FILES['upfile']['error']) ||
-        is_array($_FILES['upfile']['error'])
-    ) {
-        throw new RuntimeException('Invalid parameters.');
+$sql_limits = " GROUP BY worldcat_oclc_nbr " ;
+$sql_search = $sql . $sql_limits;
+
+//echo "sql_limits : *" . $sql_limits . "*<br/>";
+//echo "sql_search : " . $sql_search . "<br/>";
+
+$countQuery = $sql_search ;
+
+extract(runQuery($countQuery, $db),   EXTR_PREFIX_ALL, "count"); //$count_Results  $count_rowCount
+extract(runQuery($sql_search, $db), EXTR_PREFIX_ALL, "result");//$result_Results $result_rowCount
+
+
+//if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "Search SQL:<br/> " . $sql_search . " <br/>Count SQL:<br/>" . $countQuery ;}
+
+if ($count_rowCount == 0 ) { //no search results in bib_info
+
+    if ( count($alt_lib) > 0) { // if there was an alt oclc number search
+        extract(getMessage($alt_oclc, $db, $query), EXTR_PREFIX_ALL, "message"); //$message_text , $message_mappedOCLC
+
+        $newSQL = "SELECT " . $fields . " FROM bib_info  WHERE bib_info.worldcat_oclc_nbr = ". $message_mappedOCLC ;
+        $newSQL = $subquery_start . $newSQL .  $sql_limits . $subquery_end ;
+        extract(runQuery($newSQL, $db), EXTR_PREFIX_ALL, "mapped"); //$mapped_Results  $mapped_rowCount
+        if ($mapped_rowCount > 0) {
+            showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc, $message_mappedOCLC );
+            showResults($mapped_Results, $newsearch, $pagination, $end, $db);
+            echo $message_text;
+        } else { // this shouldn't happen- if in alt table should be in bib table too
+            showNoResults($query, $appliedLimits, $limitlibraries, $limitlibrariesnamesstring, $newsearch, $field) ;
+        }
+
+    } else {
+        showNoResults($query, $appliedLimits, $limitlibraries, $limitlibrariesnamesstring, $newsearch, $field) ;
     }
 
-    // Check $_FILES['upfile']['error'] value.
-    switch ($_FILES['upfile']['error']) {
-        case UPLOAD_ERR_OK:
-            break;
-        case UPLOAD_ERR_NO_FILE:
-            throw new RuntimeException('No file sent.');
-        case UPLOAD_ERR_INI_SIZE:
-        case UPLOAD_ERR_FORM_SIZE:
-            throw new RuntimeException('Exceeded filesize limit.');
-        default:
-            throw new RuntimeException('Unknown errors.');
-    }
+} else { // there are results
+    extract(getMessage($alt_oclc, $db, $query), EXTR_PREFIX_ALL, "message"); //$message_text , $message_mappedOCLC
 
-    // You should also check filesize here.
-    if ($_FILES['upfile']['size'] > 1000000) {
-        throw new RuntimeException('Exceeded filesize limit.');
-    }
+    showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc, "" );
 
-    // DO NOT TRUST $_FILES['upfile']['mime'] VALUE !!
-    // Check MIME Type by yourself.
-    $finfo = new finfo(FILEINFO_MIME_TYPE);
-    if (false === $ext = array_search(
-        $finfo->file($_FILES['upfile']['tmp_name']),
-        array(
-            'jpg' => 'image/jpeg',
-            'png' => 'image/png',
-            'gif' => 'image/gif',
-        ),
-        true
-    )) {
-        throw new RuntimeException('Invalid file format.');
-    }
+    showResults($result_Results, $newsearch, $pagination, $end, $db);
+    echo $message_text;
+} // end else not zero results
 
-    // You should name it uniquely.
-    // DO NOT USE $_FILES['upfile']['name'] WITHOUT ANY VALIDATION !!
-    // On this example, obtain safe unique name from its binary data.
-    if (!move_uploaded_file(
-        $_FILES['upfile']['tmp_name'],
-        sprintf('./uploads/%s.%s',
-            sha1_file($_FILES['upfile']['tmp_name']),
-            $ext
-        )
-    )) {
-        throw new RuntimeException('Failed to move uploaded file.');
-    }
-
-    echo 'File is uploaded successfully.';
-
-} catch (RuntimeException $e) {
-
-    echo $e->getMessage();
-
-}
+$db = null ;
 
 ?>
-*/
+
+<?php
+function showResults ($entries, $newsearch, $pagination, $end, $db) {
+
+    foreach ($entries as $row) {
+        $OCLC = $row['worldcat_oclc_nbr'] ;
+        $hathi_url = $row['any_value(hathi_url)'];
+        $isbn = $row['any_value(isbn)'];  // currently not used, should add it in
+
+        $libNames = getLibNames($OCLC, $db, "htmlplain") ;
+
+        echo <<<EOT1
+        <span style="position: relative;">
+             <!--<b>OCLC Number: </b><a href="http://www.worldcat.org/oclc/{$OCLC}">$OCLC</a>-->
+             <br /><b>EAST Retentions: </b> {$row['cnt']} <br />
+             <!--<b>TITLE:</b> {$row['any_value(title)']}<br />-->
+EOT1;
+        if ($row['isbn']) {
+            echo "<b>ISBN: </b><a href=\"https://www.worldcat.org/isbn/" . $row['isbn'] . "\">" . $row['isbn'] . "</a><br />" ;
+        }
+        if ($row['issn']) {
+            echo "<b>ISSN: </b><a href=\"https://www.worldcat.org/issn/" . $row['issn'] . "\">" . $row['issn'] . "</a><br />" ;
+        }
+        echo <<<EOT2
+             <b>Retained by: </b> $libNames
+EOT2;
+
+        echo "</span>";
+    } // end foreach OCLC Number
+
+
+} // end showResults
+?>
+<?php
+function showNoResults($query, $appliedLimits, $limitlibraries, $limitlibrariesnamesstring, $newsearch, $field) {
+    // find and report any search and library name limits here
+    if ($field == "worldcat_oclc_nbr") { $field = "OCLC Number" ;}
+    echo "<p><b>No results for $field :</b> '$query' </p>";
+
+}
+?>
+<?php
+function getMessage($alt_oclc, $db, $oclcquery) { // alt_oclc is key new oclc, value lib name
+    $messages['text'] = "";
+    $messages['mappedOCLC'] = "";
+
+    if ( $alt_oclc ) {
+        foreach ($alt_oclc as $key => $value) { // $mappedOCLC will be random if more than one, that's okay
+            $librariesAlt = array();
+            $mappedOCLC = $key;
+            foreach ($value as $id) { // get library names that have this mapped oclc
+                $librariesAlt[] = getLibLimitName($id, $db);
+            }
+            $retsearchlink = '<a href="/searchresults?searchField=worldcat_oclc_nbr&query=' . $key . '&east_retentions_operator=equals&east_retentions=any&in_hathi=">EAST Retentions</a>';
+            $oclcsearchlink = '<a href="https://worldcat.org/oclc/' . $key . '">WorldCat</a>';
+            $searchlink = " ( " . $retsearchlink . " | " .  $oclcsearchlink. " )";
+            //$message = " <i><sup>*</sup>SCS mapped OCLC Number ". $oclcquery . " to " . $searchlink . " for " . join(", ", $librariesAlt) . ".</i><br/>";
+            $message = " <i><sup>*</sup>At " . join(", ", $librariesAlt) . " SCS mapped OCLC Number ". $oclcquery . " to " . $key . $searchlink . "</i><br/>";
+
+            $messages['text'] = $messages['text'] . $message;
+        } // end foreach atl_oclc
+
+        $messages['text'] = "<br /><span>" . $messages['text'] . "</span>" ;
+        $messages['mappedOCLC'] =  $mappedOCLC  ;
+    }
+    return $messages ;
+} // end getMessage
+?>
+<?php
+function showResultsTop ($field, $count_rowCount, $limit, $to, $offset, $query,$appliedLimits, $limitlibrariesnamesstring, $alt_oclc, $mapped ){
+    if ($field === 'isbn') {
+        echo'<span><b>You searched ISBN number</b> : ' . $query  ;
+    } elseif ($field === 'issn') {
+        echo'<span><b>You searched ISSN :</b> ' . $query  ;
+    } else { // oclc search
+        echo'<span><b>OCLC number</b> : ' . $query  ;
+    }
+    if ($mapped != "") {print " <b> returned no results. &nbsp; Returning results for : </b>" . $mapped  ; }
+    if (count($alt_oclc) > 0) { print "<sup>*</sup>" ; }
+
+    echo '</span>' ;
+}
+//$json = json_decode($contents);
+
+?>
+<?php
+function runQuery ($sql, &$db){
+    //   try/catch doesn't solve hanging mysql gone away error
+    try {
+        $Query = $db->query($sql);
+        if ($Query) {
+            $Count = $Query->rowCount();
+            $Results = $Query->fetchAll();
+        }
+
+    } catch (PDOException $e) {
+        print "Error!: " . $e->getMessage() . "<br/>";
+        //echo 'The SQL query failed with error '.$db->errorCode;
+        die();
+    }
+    $queryResults['rowCount'] = $Count ;
+    $queryResults['Results'] = $Results ;
+    return $queryResults ;
+}
+?>
+<script>
+    $( ".entry:even" ).css( "background-color", "#dcdcdc");
+</script>
+
+
+

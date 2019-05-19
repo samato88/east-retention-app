@@ -46,6 +46,9 @@ handlers:
   script: /testing/resultsblockN.php
 
 # TESTING HOLDINGS
+- url: /oclc
+  script: /testing/holdings/holdings.html
+
 - url: /testing/oclc
   script: /testing/holdings/holdings.html
 
@@ -57,6 +60,12 @@ handlers:
 
 - url: /testing/holdings/getEASTHoldings
   script: /testing/holdings/api.php
+
+- url: /testing/holdings/getHathiHoldings
+  script: /testing/holdings/getHathiHoldings.php
+
+- url: /testing/holdings/getIAHoldings
+  script: /testing/holdings/getIAHoldings.php
 
 # live holdings - using same as testing for now
 #- url: /oclc

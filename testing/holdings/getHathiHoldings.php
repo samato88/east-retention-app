@@ -1,13 +1,11 @@
 <?php
+//require_once('jsonpath-0.8.1.php');
 
-include 'includes/connect.php'; // connects to appropriate database
-include 'includes/test_input.php';   // test_input function include 'includes/listLimits.php'; // list search limited by in results
-include 'includes/isTesting.php'; // is this the testing site
-include 'includes/paging.php';   // pagination
+// https://www.hathitrust.org/bib_api
+//http://catalog.hathitrust.org/api/volumes/brief/oclc/424023.json
 
-$urlbase = "http://www.worldcat.org/webservices/catalog/content/libraries/";
+$urlbase = "http://catalog.hathitrust.org/api/volumes/brief/oclc/";
 $q = urlencode(htmlentities($_GET['query'])); // 436577
-$t = urlencode(htmlentities($_GET['searchField']));
 
 if (ctype_digit($q) && (strlen($q) < 20)) { // it's all digits, and less than 20 chars, good to go
     $oclc = $query ;
@@ -17,77 +15,41 @@ if (ctype_digit($q) && (strlen($q) < 20)) { // it's all digits, and less than 20
     exit(1);
 }
 
-$monographs ="BOP,CBYSP,MVA,PFM,TFH,YPI,ZHL,mbu,PLA,TFF,BZM,DDO,TUFTV,BOS,CBY,NHM,PIT,TFW,SYB,ZIH,VJA,AMH,VVP,BXM,MBB,BDR,BMC,CTL,NKF,FAU,YHM,HAM,LAF,LOY,MDY,MTH,PEX,SAC,VKM,VZS,SNN,PSC,TYC,ZWU,UCW,AUM,BMU,SMU,ULN,RRR,VXW,WEL,WLU,WCM,MAFCI,PBU,NNM,ALL,FDA,SFU,GDC,ZYU,TWU,ZWU";
-$serials = "BOP,PFM,TFH,YPI,ZHL,mbu,PLA,TFF,BZM,DDO,TUFTV,BOS,PIT,TFW,SYB,ZIH,AMH,VVP,BXM,MBB,CTL,NKF,FAU,YHM,LAF,LOY,MTH,VKM,SNN,PSC,TYC,ZWU,AUM,RRR,VXW,WCM,MAFCI,ALL,ZYU,TWU,ZWU,CGA,MBW,WQM";
 
-//$callback = $_GET["callback"] ;
-$format = "?format=json";
-$callback = "&callback=holdings";
-$libtype = "&libtype=1"; // academic
-$servicelevel = "&servicelevel=full";
-$symbol = "&oclcsymbol=$monographs"; // PIT
-$wskey = "&wskey=" . $wskey;
+$hurl = $urlbase . $q . ".json";
 
-//frbrGrouping
 
-$url = $urlbase . $q . $format . $symbol . $wskey;
 //echo $url ;
-$contents = file_get_contents($url);
-// NEED ERROR CHECKING HERE - what does file_get_contents return?
+$hcontents = file_get_contents($hurl);
 
-//echo $contents ;
-//var_dump(json_decode($contents));
+//echo $hcontents ;
+//var_dump(json_decode($hcontents));
 
-$json = json_decode($contents);
-// {"title":"Dogs.","author":"Grabianski, Janusz.","publisher":"F. Watts","date":"1968.","OCLCnumber":"436577","totalLibCount":3,"library":
+
+$hjson = json_decode($hcontents);
+
+
+$hholdings = $hjson->{'items'}; // items is an array
+
+//$records = $hjson->{'records'}[0]->{'recordURL'};
+$records = $hjson->{'records'} ;
+foreach ($records as $rec) { // just get the first record url
+  $recordURL = $rec->{'recordURL'};
+
+}
+ /*
 $title = $json->{'title'};
-$resultOCLC = $json->{'OCLCnumber'};
-$eastCount =  $json->{'totalLibCount'};
 $libraries = $json->{'library'}; // libraries is an array
-
-$OCLCmessage = "<p>Current OCLC Number: <a href='https://www.worldcat.org/oclc/" . $resultOCLC. "'/>" . $resultOCLC . "</a><br />";
-$OCLCmessage = $OCLCmessage . "Search results with FRBR On :<br />";
-$OCLCmessage = $OCLCmessage .  "<b>$title</b>";
-$OCLCmessage = $OCLCmessage . "<br />EAST Holdings: $eastCount  <p />";
-
-/*
-echo "<p>Current OCLC Number: <a href='https://www.worldcat.org/oclc/" . $resultOCLC. "'/>" . $resultOCLC . "</a><br />";
-echo "Search results with FRBR On :<br />";
-echo "<b>$title</b>";
-echo "<br />EAST Holdings: $eastCount  <p />";
 */
-foreach($libraries as $lib) {
-    //var_dump($lib);
-    $libName = $lib->{'institutionName'};
-    $url =  $lib->{'opacUrl'};
-    $libsymbol = $lib->{'oclcSymbol'};
-    $state = $lib->{'state'};
 
-    $OCLCmessage = $OCLCmessage . '<a href="$url">$libName</a> ($libsymbol)';
-/*
-    echo <<<EOL
-    <a href="$url">$libName</a> ($libsymbol)
-<hr />
-EOL;
-*/
-} // end foreach lib
+ //$Hathimessage = $hjson;
+//$Hathimessage = $hholdings;
+//$Hathimessage = $records ;
+$Hathimessage = $recordURL;
+//$Hathimessage = "<p>Pending Implementation</p>";
 
-echo $OCLCmessage;
-echo "<hr/";
+echo $Hathimessage;
 //echo $json{'library'}{'institutionName'};
 
 
 //echo $json;
-
-// URLS......
-//http://localhost:8080/testing/oclcHoldings?q=436577
-// http://localhost:8080/testing/oclc?q=1172085
-//$jurl = "http://www.worldcat.org/webservices/catalog/content/libraries/"
-// . $oclc .
-// "?oclcsymbol=BYNSP,BTSSP&wskey=" . $key .
-// "&servicelevel=full&format=json&callback=" . $callback ;
-
-//https://www.worldcat.org/webservices/catalog/content/libraries/436577?oclcsymbol=PIT&libtype&format=json&callback=function&wskey=$wskey
-
-// this gets you 019s:
-// https://www.worldcat.org/webservices/catalog/content/1172085?format=json&callback=function&servicelevel=full&wskey=$wskey

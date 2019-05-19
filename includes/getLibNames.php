@@ -1,5 +1,8 @@
 <?php
-function getLibNames($nbr, $db) {
+function getLibNames($nbr, $db, $format) {
+    // options for format:  json, htmlstyled, htmlplain, text?
+
+
     $nsql = "SELECT opac_url, library_id, lib_holdings, library FROM bib_info, inst_id WHERE worldcat_oclc_nbr = $nbr AND bib_info.library_id = inst_id.Inst_ID ORDER BY library" ;
     $result = $db->query($nsql) ;
     $library_names = array();
@@ -8,8 +11,32 @@ function getLibNames($nbr, $db) {
         $url = $row['opac_url'] ;
         $name = trim($row['library']) ;
         $holdings = $row[lib_holdings] ;
+        if ($url =="") { $format = "text" ;}
 
-        if ($url !="") {
+        switch ($format)  {
+            case "text":
+                $name = $name . " (". $url . ")";
+                break ;
+            case "htmlplain":
+                $name = '<a href="' . $url . '">' . $name . "</a>";
+                if ($holdings != "") { // if holdings available
+                    $name = $name .
+                        "<span class='tooltiptext' >" . $holdings . "</span>";
+                }
+                break ;
+            case "htmlstyled":
+                $name = '<div class="tooltip"><a href="' . $url . '">' . $name . "</a>";
+                if ($holdings != "") { // if holdings available
+                    $name = $name .
+                        "<span class='tooltiptext' >" . $holdings . "</span>";
+                }
+                $name = $name . "</div>" ;
+                break ;
+
+        }
+      /*  pre switch 2019-05-01
+        if ($url !="") { // if no url return plain text? error? and this should be default format
+            // htmlstyled and htmlplain should go here
             $name = '<div class="tooltip"><a href="' . $url . '">' . $name . "</a>";
             if ($holdings != "") { // if holdings available
                 $name = $name .
@@ -17,7 +44,7 @@ function getLibNames($nbr, $db) {
             }
             $name = $name . "</div>" ;
         } # end if library url
-
+*/
   /*  SEA notes - this sort of worked but positioning was off - css easier than jquery!
         if ($url !="") {
             $name = '<a class="holdings" href="' . $url . '">' . $name . "</a>" ;
@@ -34,6 +61,8 @@ function getLibNames($nbr, $db) {
     } // end foreach row
     return join(', ',$library_names);
 } // end getLibNames
+
+
 
 
 function getLibLimitName($id, $db) {  // libnames to report on you searched limit
