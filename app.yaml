@@ -61,6 +61,12 @@ handlers:
 - url: /testing/holdings/getEASTHoldings
   script: /testing/holdings/api.php
 
+- url: /api
+  script: /testing/holdings/api.php
+
+- url: /revoked
+  script: /testing/holdings/revoked.php
+
 - url: /testing/holdings/getHathiHoldings
   script: /testing/holdings/getHathiHoldings.php
 

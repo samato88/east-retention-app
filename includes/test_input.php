@@ -19,7 +19,7 @@ function test_input($data, $testfield) { //http://php.net/manual/en/filter.filte
         } elseif($_GET["searchField"] == 'issn') {
             $data = filter_var($data, FILTER_SANITIZE_NUMBER_INT) ;
 
-        }else { // is a title search or something random someone put in!
+        }else { // is a title search, format or something random someone put in!
             if (strlen($data)>250) {
                 $data = substr($data, 0, 249); # no titles longer than 250
             }
