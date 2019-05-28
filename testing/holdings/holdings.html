@@ -7,11 +7,13 @@ To Do:
     <li>SORT retention partners for OCLC WorldCat search RESULTS</li>
     <li>Add isbn search</li>
     <li>Add issn search</li>
-    <li>parse Hathi search</li>
-    <li>Add IA search</li>
+    <li>FRBR</li>
+    <li>total worldcat? </li>
+    <li>all alt numbers? </li>
     <li>getOCLCHoldings needs to just return a message if api fails = what does file_get_contents return?</li>
     <li>probably need to add another table for operational contacts...keeping that up to date will be problematic
 can spreadsheet be queried?</li>
+    <li>monograph vs retention partners</li>
 </ul>
 <br />
 <form name="queryForm" id="queryForm" action="/testing/holdings/searchresults" method="get">
@@ -25,29 +27,15 @@ can spreadsheet be queried?</li>
             <option value="issn">ISSN</option>
         </select>
         <input type="text"  size="40" name="query" id="query" value=""/>
+        <select name="frbr" id="frbr">
+            <option value="on">FRBR On</option>
+            <option value="off">FRBR Off</option>
+        </select>
     </div>
-
-
-    <br /><!--http://www.hathitrust.org/rights_database#Attributes-->
-
-
-    <br />
-    <p>
         <input class="easttext" type="submit" value="Submit">
-    </p>
     <hr />
-
-
 </form>
-<p>TODO:  </p>
-<ul>
-    <li>FRBR</li>
-    <li>total worldcat? </li>
-    <li>all alt numbers? </li>
-    <li>Search retentions - east api</li>
-    <li>search hathi -  https://catalog.hathitrust.org/api/volumes/full/oclc/10538871.json </li>
-    <li>search ia </li>
-</ul>
+
 <p>
     Samples: <br />
     Hathi:  424023<br />

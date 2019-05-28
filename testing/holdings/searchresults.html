@@ -4,6 +4,7 @@ include 'includes/header.html';
 include 'includes/test_input.php';   // test_input function
 
 $query = test_input($_GET["query"], "query") ; // searchstring
+$frbr  = test_input($_GET["frbr"], "searchField") ; //  string test
 
 echo "<b>You searched: </b><a href='https://www.worldcat.org/oclc/". $query . "'>" . $query . "</a> </b></br>";
 ?>
@@ -11,7 +12,7 @@ echo "<b>You searched: </b><a href='https://www.worldcat.org/oclc/". $query . "'
 
 <hr />
 <div id="WorldCat">
-    <b>EAST Members WorldCat Holdings:</b>
+    <b>EAST Members WorldCat Holdings, FRBR <?php echo $frbr ; ?>:</b>
     <div id="loadingWorldCat" class="centerRow">
         <h3 class="easttext">Querying...</h3>
         <img src="/images/loopingCircle.gif" alt="loading" height="30px" />
