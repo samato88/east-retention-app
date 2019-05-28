@@ -1,21 +1,30 @@
 <?php
 function getLibNames($nbr, $db, $format) {
-    // options for format:  json, htmlstyled, htmlplain, text?
-
+    // options for format:  json, htmlstyled, htmlplain, inst_id, text?
 
     $nsql = "SELECT opac_url, library_id, lib_holdings, library FROM bib_info, inst_id WHERE worldcat_oclc_nbr = $nbr AND bib_info.library_id = inst_id.Inst_ID ORDER BY library" ;
+
+    if ($format=="revoked") { // check revoked table rather than bib_info
+        $nsql = "SELECT opac_url, library_id, lib_holdings, library FROM revoked_retentions, inst_id WHERE worldcat_oclc_nbr = $nbr AND revoked_retentions.library_id = inst_id.Inst_ID ORDER BY library" ;
+        $format="inst_id"; // set back to inst_id for plain string results
+    } else {
+        $nsql = "SELECT opac_url, library_id, lib_holdings, library FROM bib_info, inst_id WHERE worldcat_oclc_nbr = $nbr AND bib_info.library_id = inst_id.Inst_ID ORDER BY library" ;
+    }
     $result = $db->query($nsql) ;
     $library_names = array();
     foreach ($result as $row) {
         $id = $row['library_id'] ;
         $url = $row['opac_url'] ;
         $name = trim($row['library']) ;
-        $holdings = $row[lib_holdings] ;
+        $holdings = $row['lib_holdings'] ;
         if ($url =="") { $format = "text" ;}
 
         switch ($format)  {
             case "text":
                 $name = $name . " (". $url . ")";
+                break ;
+            case "inst_id":
+                $name = $id;
                 break ;
             case "htmlplain":
                 $name = '<a href="' . $url . '">' . $name . "</a>";
@@ -34,28 +43,6 @@ function getLibNames($nbr, $db, $format) {
                 break ;
 
         }
-      /*  pre switch 2019-05-01
-        if ($url !="") { // if no url return plain text? error? and this should be default format
-            // htmlstyled and htmlplain should go here
-            $name = '<div class="tooltip"><a href="' . $url . '">' . $name . "</a>";
-            if ($holdings != "") { // if holdings available
-                $name = $name .
-                    "<span class='tooltiptext' >" . $holdings . "</span>";
-            }
-            $name = $name . "</div>" ;
-        } # end if library url
-*/
-  /*  SEA notes - this sort of worked but positioning was off - css easier than jquery!
-        if ($url !="") {
-            $name = '<a class="holdings" href="' . $url . '">' . $name . "</a>" ;
-  //          if ($holdings !="") {
-                $name = $name .
-                "<div class='enum' id=\"' . $id . '\" style='display:none; border:solid 1px black; padding:5px;
-                    background-color:whitesmoke; margin: 5px ; position: absolute; top:9px;'>"
-                    . $id . $holdings . "</div>";
-  //          }
-        }
- */
 
         array_push($library_names,  $name) ;
     } // end foreach row
@@ -77,6 +64,7 @@ function listLibraries($db, $id) {
     $sql = "SELECT library, Inst_ID FROM inst_id ORDER BY library" ;
     $nameresults = $db->query($sql) ;
     $library_names = array();
+    $option = "";
     foreach ($nameresults as $row) {
         $libid = $row['Inst_ID'] ;
 
