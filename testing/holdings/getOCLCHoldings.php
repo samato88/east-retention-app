@@ -75,7 +75,7 @@ else {
    for ($n = 1; $n <= $rows; $n++) {
         foreach ($libraries as $i => $lib) {
             if ($i % $n) {
-               echo $i ;
+               #echo $i ;
             }
         }
     }
