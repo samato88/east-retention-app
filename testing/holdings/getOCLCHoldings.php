@@ -51,38 +51,53 @@ else {
     $eastCount = $json->{'totalLibCount'};
     $libraries = $json->{'library'}; // libraries is an array
 
+    if ($eastCount == "") {$eastCount = 0;}
+
     $OCLCmessage = "<p>Current OCLC Number: <a href='https://www.worldcat.org/oclc/" . $resultOCLC . "'/>" . $resultOCLC . "</a><br />";
     $OCLCmessage = $OCLCmessage . "Title: $title";
     $OCLCmessage = $OCLCmessage . "<br />EAST Holdings: $eastCount  <p />";
 
-    $sorted_libraries = usort($libraries, 'comparator'); // this actually sorts $libraries, retruns t/f
+    if ($eastCount > 0) {
+        $sorted_libraries = usort($libraries, 'comparator'); // this actually sorts $libraries, retruns t/f
 
-    foreach ($libraries as $i=>$lib) {
-        //var_dump($lib);
-        //if ($i % 4 == 0) { $OCLCmessage = $OCLCmessage . "<br />" ;}
-        $libName = $lib->{'institutionName'};
-        $url = $lib->{'opacUrl'};
-        $libsymbol = $lib->{'oclcSymbol'};
-        $state = $lib->{'state'};
-
-        $OCLCmessage = $OCLCmessage . " <a href='$url'>$libName</a>($libsymbol)";
-        if ($lib != end($libraries)) {
-            $OCLCmessage = $OCLCmessage . ", ";
-        }
-
-    } // end foreach lib
-    $rows = ceil(count($libraries)/4 );
-   for ($n = 1; $n <= $rows; $n++) {
         foreach ($libraries as $i => $lib) {
-            if ($i % $n) {
-               #echo $i ;
+            //var_dump($lib);
+            //if ($i % 4 == 0) { $OCLCmessage = $OCLCmessage . "<br />" ;}
+            $libName = $lib->{'institutionName'};
+            $url = $lib->{'opacUrl'};
+            $libsymbol = $lib->{'oclcSymbol'};
+            $state = $lib->{'state'};
+
+            $OCLCmessage = $OCLCmessage . " <a href='$url'>$libName</a>($libsymbol)";
+            if ($lib != end($libraries)) {
+                $OCLCmessage = $OCLCmessage . ", ";
+            }
+
+        } // end foreach lib
+
+        $columns = 4;
+        $rows = ceil(count($libraries) / $columns);
+        $table = "<table>";
+        for ($n = 0; $n < $rows; $n++) {
+            $table = $table . "<tr>";
+            for ($i = 0; $i < $columns; $i++) {
+                $key = $n + ($i * $rows);
+
+                $libName = $libraries{$key}->{'institutionName'};
+                $url = $libraries{$key}->{'opacUrl'};
+                $libsymbol = $libraries{$key}->{'oclcSymbol'};
+                $state = $libraries{$key}->{'state'};
+                // NEED TO CHECK IF $libraries{$key} has data
+                //echo "*" . $key . "* ";
+                if (isset($libraries{$key})) {
+                    $table = $table . "<td> <a href='$url'>$libName</a>($libsymbol) </td>";
+                }
             }
         }
+        $table = $table . "</table>";
+        echo $table ;
     }
-
-
-
-        echo $OCLCmessage;
+    echo $OCLCmessage;
  //echo $json{'library'}{'institutionName'};
  } // else get file contents didn't fail
 
