@@ -17,10 +17,10 @@ $fields = "worldcat_oclc_nbr, any_value(title),  any_value(isbn), any_value(issn
 
 
 if ($field === "isbn") {
-    $sql = "SELECT " . $fields . " FROM bib_info  WHERE isbn = '" . $query . "'";
+    $sql = "SELECT " . $fields . " FROM revoked_retentions  WHERE isbn = '" . $query . "'";
 
 } else if ($field === "issn") {
-    $sql = "SELECT " . $fields . " FROM bib_info  WHERE issn = '" . $query . "'";
+    $sql = "SELECT " . $fields . " FROM revoked_retentions  WHERE issn = '" . $query . "'";
 
 } else  { //($field === "worldcat_oclc_nbr") -DEFAULT SEARCH TYPE
     // check here if OCLC also in is table of oclcs updated by SCS
@@ -36,7 +36,7 @@ if ($field === "isbn") {
         } // end foreach alt oclc number result
     } // end if results from query on alt oclc number table, used later??
 
-    $sql = "SELECT " . $fields . " FROM bib_info WHERE worldcat_oclc_nbr=" . $query  ;
+    $sql = "SELECT " . $fields . " FROM revoked_retentions WHERE worldcat_oclc_nbr=" . $query  ;
 
 } // end field type
 
@@ -54,12 +54,12 @@ extract(runQuery($sql_search, $db), EXTR_PREFIX_ALL, "result");//$result_Results
 
 //if ( preg_match("/testing/", htmlspecialchars($_SERVER['PHP_SELF']) ) ) { echo "Search SQL:<br/> " . $sql_search . " <br/>Count SQL:<br/>" . $countQuery ;}
 
-if ($count_rowCount == 0 ) { //no search results in bib_info
+if ($count_rowCount == 0 ) { //no search results in revoked_retentions
 
     if ( count($alt_lib) > 0) { // if there was an alt oclc number search
         extract(getMessage($alt_oclc, $db, $query), EXTR_PREFIX_ALL, "message"); //$message_text , $message_mappedOCLC
 
-        $newSQL = "SELECT " . $fields . " FROM bib_info  WHERE bib_info.worldcat_oclc_nbr = ". $message_mappedOCLC ;
+        $newSQL = "SELECT " . $fields . " FROM revoked_retentions  WHERE revoked_retentions.worldcat_oclc_nbr = ". $message_mappedOCLC ;
         $newSQL = $subquery_start . $newSQL .  $sql_limits . $subquery_end ;
         extract(runQuery($newSQL, $db), EXTR_PREFIX_ALL, "mapped"); //$mapped_Results  $mapped_rowCount
         if ($mapped_rowCount > 0) {
@@ -80,6 +80,7 @@ if ($count_rowCount == 0 ) { //no search results in bib_info
     if ($format != "inst_id") {
         showResultsTop($field, $count_rowCount, $limit, $to, $offset, $query, $appliedLimits, $limitlibrariesnamesstring, $alt_oclc, "");
     }
+
     showResults($result_Results, $newsearch, $pagination, $end, $format, $db);
     if ($format != "inst_id") {
         echo $message_text;
@@ -99,11 +100,11 @@ function showResults ($entries, $newsearch, $pagination, $end, $format, $db) {
         $isbn = $row['any_value(isbn)'];  // currently not used, should add it in
 
         if ($format == "inst_id") {
-            $libNames = getLibNames($OCLC, $db, "inst_id");
+            $libNames = getLibNames($OCLC, $db, "revoked");
             echo $libNames;
         }
         else {
-            $libNames = getLibNames($OCLC, $db, "htmlstyled");
+            $libNames = getLibNames($OCLC, $db, "htmlplain");
 
             echo <<<EOT1
         <span style="position: relative;">
@@ -118,7 +119,7 @@ EOT1;
                 echo "<b>ISSN: </b><a href=\"https://www.worldcat.org/issn/" . $row['issn'] . "\">" . $row['issn'] . "</a><br />";
             }
             echo <<<EOT2
-             <b>Retained by: </b> $libNames 
+             <b>Retained by: </b> $libNames
 EOT2;
 
             echo "</span>";

@@ -17,6 +17,7 @@ handlers:
 #  static_dir: includes
 # application_readable: true
 
+#  retentions db search
 - url: /searchresults
   script: /searchresults.html
 
@@ -26,7 +27,7 @@ handlers:
 - url: /about
   script: /about.html
 
-# TESTING
+# TESTING regular retention db search
 - url: /testing/
   script: /testing/index.html
 
@@ -46,9 +47,6 @@ handlers:
   script: /testing/resultsblockN.php
 
 # TESTING HOLDINGS
-- url: /oclc
-  script: /testing/holdings/holdings.html
-
 - url: /testing/oclc
   script: /testing/holdings/holdings.html
 
@@ -72,6 +70,49 @@ handlers:
 
 - url: /testing/holdings/getIAHoldings
   script: /testing/holdings/getIAHoldings.php
+
+- url: /testing/holdings/getMemberSpreadsheet
+  script: /testing/holdings/getMemberSpreadsheet.php
+
+- url: /testing/holdings/getMemberSpreadsheetDist
+  script: /testing/holdings/getMemberSpreadsheet.dist.php
+
+- url: /testing/holdings/getMemberSpreadsheetLive
+  script: /testing/holdings/getMemberSpreadsheet.live.php
+
+# HOLDINGS
+- url: /oclc
+  script: /holdings/holdings.html
+
+- url: /holdings/searchresults
+  script: /holdings/searchresults.html
+
+- url: /holdings/getOCLCHoldings
+  script: /holdings/getOCLCHoldings.php
+
+- url: /holdings/getEASTHoldings
+  script: /holdings/api.php
+
+- url: /api
+  script: /holdings/api.php
+
+- url: /revoked
+  script: /holdings/revoked.php
+
+- url: /holdings/getHathiHoldings
+  script: /holdings/getHathiHoldings.php
+
+- url: /holdings/getIAHoldings
+  script: /holdings/getIAHoldings.php
+
+- url: /holdings/getMemberSpreadsheet
+  script: /holdings/getMemberSpreadsheet.php
+
+- url: /holdings/getMemberSpreadsheetDist
+  script: /holdings/getMemberSpreadsheet.dist.php
+
+- url: /holdings/getMemberSpreadsheetLive
+  script: /holdings/getMemberSpreadsheet.live.php
 
 # live holdings - using same as testing for now
 #- url: /oclc

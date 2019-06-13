@@ -2,14 +2,9 @@
 <?php include 'includes/header.html';?>
 <!--php composer.phar-->
 <h2>Find EAST Holdings</h2>
-To Do:
-<ul>
-    <li>smaller oclc results box if < 4 holders (make dynamic size up to 4, don't display if east 0)</li>
-    <li>Add isbn search?</li>
-    <li>Add issn search?</li>
-</ul>
-<br />
-<form name="queryForm" id="queryForm" action="/testing/holdings/searchresults" method="get">
+<p>Use this service to locate other EAST retentions partners who hold an OCLC number.</p>
+
+<form name="queryForm" id="queryForm" action="/holdings/searchresults" method="get">
 
     <div id="numberError"></div>
     <div>
@@ -56,23 +51,7 @@ To Do:
 
 
 </script>
-<p>
-    Samples: <br />
-    Hathi:  424023<br />
-    EAST not retained: 644583935<br />
-    Broken OCLC JSON: 123574447 <br />
-    4 holders: 10016015 <br/>
-    has holdings: 3704706 <br/>
-    Hathi PD: 5907756 <br/>
-    IA: 1418726 <br/>
-    IA & Hathi: 492364, 14219719<br />
-    isbn: 9781876040222 , 0001002762729 <br/>
-    issn: 1534-3219 </br>
-    multi oclc in 019: 38833097 (in 001)  1008475850 (in 019) <br />
-    not in bib info but has alt oclc: 327, 21726742 | not in bib info but has multi alt oclc: 68082962 | in bib info and alt: 1172085
 
-
-</p>
 <p>
     <b><a href="https://www.oclc.org/developer/develop/web-services/worldcat-search-api/library-locations.en.html
 ">*OCLC API Known Issue</a></b>:<br/>
@@ -81,11 +60,7 @@ To Do:
     For Library Catalog Resource requests, the merged OCLC number only works correctly
     if frbrGrouping is set to "on" or on by default. When the frbrGrouping parameter is
     set to "off" the merged OCLC number request incorrectly results in indicating there are no holdings.
-
-
-
 </p>
-
 
 <?php include 'includes/footer.html';?>
 

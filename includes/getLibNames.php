@@ -30,7 +30,7 @@ function getLibNames($nbr, $db, $format) {
                 $name = '<a href="' . $url . '">' . $name . "</a>";
                 if ($holdings != "") { // if holdings available
                     $name = $name .
-                        "<span class='tooltiptext' >" . $holdings . "</span>";
+                        "(<span class='tooltiptext' >" . $holdings . "</span> )";
                 }
                 break ;
             case "htmlstyled":

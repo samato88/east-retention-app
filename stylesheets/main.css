@@ -88,3 +88,10 @@ a button {
 .tooltip:hover .tooltiptext {
     visibility: visible;
 }
+
+div #holdings {
+    background-color: lightgrey;
+    height: 125px;
+    border: 1px dotted black;
+    overflow: scroll;
+}

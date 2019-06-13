@@ -1,10 +1,11 @@
 <?php
 require __DIR__ . '/../../vendor/autoload.php';
 
+/*
 if (php_sapi_name() != 'cli') {
     throw new Exception('This application must be run on the command line.');
 }
-
+*/
 /**
  * Returns an authorized API client.
  * @return Google_Client the authorized client object
@@ -14,10 +15,11 @@ function getClient()
     $client = new Google_Client();
     $client->setApplicationName('Google Sheets API PHP Quickstart');
     $client->setScopes(Google_Service_Sheets::SPREADSHEETS_READONLY);
-    $client->setAuthConfig('credentials.json');
     $client->setAccessType('offline');
     $client->setPrompt('select_account consent');
 
+    $client->setAuthConfig('credentials.json');
+    $client->setHttpClient(new GuzzleHttp\Client(['verify'=>'ca-bundle.crt']));
     // Load previously authorized token from a file, if it exists.
     // The file token.json stores the user's access and refresh tokens, and is
     // created automatically when the authorization flow completes for the first
@@ -62,6 +64,13 @@ function getClient()
 // Get the API client and construct the service object.
 $client = getClient();
 $service = new Google_Service_Sheets($client);
+// Prints the names and majors of students in a sample spreadsheet:
+// https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+//$eastmembersdbSpreadsheetId = '1ceiwwnXj-Gv3W9tXXppAlx2nh4kX0SqM3z_-cDOo1Xg';
+//$erange = 'OContact!A2:C';
+//$eresponse = $service->spreadsheets_values->get($eastmembersdbSpreadsheetId, $erange);
+
+
 
 // Prints the names and majors of students in a sample spreadsheet:
 // https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
