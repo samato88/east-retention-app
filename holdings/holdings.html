@@ -18,8 +18,8 @@
         </select>
         <input type="text"  size="40" name="query" id="query" value=""/>
         <select name="frbr" id="frbr">
-            <option value="off">FRBR Off*</option>
-            <option value="on">FRBR On</option>
+            <option value="off">FRBR Off (same edition)</option>
+            <option value="on">FRBR On (any edition)*</option>
         </select>
         <select name="retentiontype" id="retentiontype">
             <option value="monographs">Monograph Retention Partners</option>
@@ -53,6 +53,8 @@
 </script>
 
 <p>
+
+    <!--
     <b><a href="https://www.oclc.org/developer/develop/web-services/worldcat-search-api/library-locations.en.html
 ">*OCLC API Known Issue</a></b>:<br/>
     When an OCLC number has been merged under another record, the merged OCLC number
@@ -61,6 +63,9 @@
     if frbrGrouping is set to "on" or on by default. When the frbrGrouping parameter is
     set to "off" the merged OCLC number request incorrectly results in indicating there are no holdings.
 </p>
-
+-->
+    <p>
+    <b>*</b> Search results with FRBR On (any edition) may or may not be suitable for retention commitment replacements.
+</p>
 <?php include 'includes/footer.html';?>
 
