@@ -63,7 +63,7 @@ if ($json->{'OCLCnumber'} != $q) { # should make sure json oclc is a number!
 
 if ($f == "off") { // check full oclc holdings if a frbr off search, frbr on calls to oclc api don't return totallibcount
     $furl = $urlbase . $q . $format . $maxlibraries . $frbr . $wskey;
-    echo $furl ;
+    //echo $furl ;
     $fcontents = file_get_contents($furl);
     $fjson = json_decode($fcontents);
 
