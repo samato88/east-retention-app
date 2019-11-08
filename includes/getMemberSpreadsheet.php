@@ -89,7 +89,7 @@ function getSpreadsheet() {
 
     $eastmembersdbSpreadsheetId = '1ceiwwnXj-Gv3W9tXXppAlx2nh4kX0SqM3z_-cDOo1Xg';
     $ocrange = 'OContact!A:C'; // need hash that is inst_id/email name link
-    $memrange = 'Members!A:Q'; //need a string of mono members, serials members and hash that is sym/inst_id
+    $memrange = 'Members!A:R'; //need a string of mono members, serials members and hash that is sym/inst_id
 
     $memresponse = $service->spreadsheets_values->get($eastmembersdbSpreadsheetId, $memrange);
     $memvalues = $memresponse->getValues();
@@ -110,18 +110,18 @@ function getSpreadsheet() {
         print "No data found.\n";
     } else {
         foreach ($memvalues as $row) { //
-            $symbols = explode(" ", strtoupper($row[16])); // make an array of symbols $row[16]
+            $symbols = explode(" ", strtoupper($row[17])); // make an array of symbols $row[17]
             foreach ($symbols as $sym) {
                 $symboltoid[$sym] = $row[0]; // lookup table symbol to library_id
             }
 
-            if (preg_match('/Monographs/', $row[11])) {
+            if (preg_match('/Monographs/', $row[12])) {
                 array_push($monographs, implode(',', $symbols));
             }
-            if (preg_match('/Serials/', $row[11])) {
+            if (preg_match('/Serials/', $row[12])) {
                 array_push($serials, implode(',', $symbols));
             }
-            //printf("*%s*, %s\n", $row[11], $row[16]);
+            //printf("*%s*, %s\n", $row[12], $row[17]);
         } // end foreach row
 
         $monographsymbols = implode(',', $monographs); // , delimited string of monograph partner symbols

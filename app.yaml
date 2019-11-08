@@ -90,6 +90,9 @@ handlers:
 - url: /holdings/getOCLCHoldings
   script: /holdings/getOCLCHoldings.php
 
+- url: /holdings/getRawOCLCHoldings
+  script: /holdings/getRawOCLCHoldings.php
+
 - url: /holdings/getEASTHoldings
   script: /holdings/api.php
 

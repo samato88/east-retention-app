@@ -48,11 +48,12 @@ $json = json_decode($contents);
 //  echo $contents ;
 //var_dump(json_decode($contents));
 
-// if frbr off and json oclc different than dist oclc, re-execute with new oclc
+// if json oclc different than dist oclc, re-execute with new oclc
 
 if ($json->{'OCLCnumber'} != $q) { # should make sure json oclc is a number!
     #echo "NEW OCLC " . $json->{'OCLCnumber'} ;
     if (ctype_digit($json->{'OCLCnumber'})) {
+        $q = $json->{'OCLCnumber'} ; //updating this for use in call to get total OCLC holdings
         $url = $urlbase . $json->{'OCLCnumber'} . $format . $maxlibraries . $frbr . $symbol . $wskey;
         $contents = file_get_contents($url);
         $json = json_decode($contents);
@@ -60,9 +61,9 @@ if ($json->{'OCLCnumber'} != $q) { # should make sure json oclc is a number!
 }
 
 
-if ($f == "off") { // check full oclc holdings if a frbr off search
+if ($f == "off") { // check full oclc holdings if a frbr off search, frbr on calls to oclc api don't return totallibcount
     $furl = $urlbase . $q . $format . $maxlibraries . $frbr . $wskey;
-    //echo $furl ;
+    echo $furl ;
     $fcontents = file_get_contents($furl);
     $fjson = json_decode($fcontents);
 

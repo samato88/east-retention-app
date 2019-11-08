@@ -1,0 +1,16 @@
+/.idea/*
+*~
+/includes/connect.php
+/includes/users.php
+/credentials.json.fromcloudinstance
+/credentials.json.new
+/includes/credentials.json
+/holdings/credentials.json
+/testing/holdings/credentials.json
+/credentials.json
+/includes/token.json
+/holdings/token.json
+/testing/holdings/token.json
+/includes/ca-bundle.crt
+/holdings/ca-bundle.crt
+/testing/holdings/ca-bundle.crt

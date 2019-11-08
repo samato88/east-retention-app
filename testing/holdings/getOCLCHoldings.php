@@ -31,6 +31,7 @@ if (ctype_digit($q) && (strlen($q) < 20)) { // it's all digits, and less than 20
     $symbols = $monographs ;
  }
 
+//echo "MONOS:*" . $monographs . "*";
 
 $format = "?format=json";
 $callback = "&callback=holdings";
@@ -38,7 +39,7 @@ $libtype = "&libtype=1"; // academic
 //$servicelevel = "&servicelevel=full";
 $maxlibraries = "&maximumLibraries=100";
 $frbr= "&frbrGrouping=" . $f ;
-$symbol = "&oclcsymbol=$symbols"; // monograph partners symbols
+$symbol = "&oclcsymbol=" . $symbols; // monograph partners symbols
 $wskey = "&wskey=" . $wskey;
 
 $url = $urlbase . $q . $format . $maxlibraries . $frbr . $symbol . $wskey;
@@ -53,6 +54,7 @@ $json = json_decode($contents);
 if ($json->{'OCLCnumber'} != $q) { # should make sure json oclc is a number!
     #echo "NEW OCLC " . $json->{'OCLCnumber'} ;
     if (ctype_digit($json->{'OCLCnumber'})) {
+        $q = $json->{'OCLCnumber'} ; //updating this for use in call to get total OCLC holdings
         $url = $urlbase . $json->{'OCLCnumber'} . $format . $maxlibraries . $frbr . $symbol . $wskey;
         $contents = file_get_contents($url);
         $json = json_decode($contents);
